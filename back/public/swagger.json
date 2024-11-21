@@ -231,11 +231,7 @@
 				"tags": [
 					"Users"
 				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
+				"security": [],
 				"parameters": [],
 				"requestBody": {
 					"required": true,
