@@ -61,11 +61,46 @@ export class ChessService {
       throw new Error("Game is already finished");
     }
 
-    // Valider et effectuer le mouvement
     const boardState = JSON.parse(game.board_state);
     const movesHistory = JSON.parse(game.moves_history);
 
-    // TODO: Implémenter la validation des mouvements selon les règles des échecs
+    // Vérifier la pièce de départ
+    const [fromFile, fromRank] = from.split("");
+    const piece =
+      boardState[8 - parseInt(fromRank)][fromFile.charCodeAt(0) - 97];
+
+    if (!piece) {
+      throw new Error("No piece at starting position");
+    }
+
+    // Vérifier si la pièce appartient au joueur dont c'est le tour
+    const pieceColor = piece.startsWith("W")
+      ? ChessColor.WHITE
+      : ChessColor.BLACK;
+    if (pieceColor !== game.current_turn) {
+      throw new Error(`Not your turn - Current turn is ${game.current_turn}`);
+    }
+
+    // Vérifier si le même coup n'a pas déjà été joué
+    const lastMove =
+      movesHistory.length > 0 ? movesHistory[movesHistory.length - 1] : null;
+    if (lastMove && lastMove.from === from && lastMove.to === to) {
+      throw new Error("This exact move was just played");
+    }
+
+    // Vérifier la position d'arrivée
+    const [toFile, toRank] = to.split("");
+    const targetSquare =
+      boardState[8 - parseInt(toRank)][toFile.charCodeAt(0) - 97];
+
+    // Si la case d'arrivée contient une pièce de même couleur
+    if (targetSquare && targetSquare.startsWith(piece[0])) {
+      throw new Error("Cannot capture your own piece");
+    }
+
+    // Effectuer le mouvement
+    boardState[8 - parseInt(toRank)][toFile.charCodeAt(0) - 97] = piece;
+    boardState[8 - parseInt(fromRank)][fromFile.charCodeAt(0) - 97] = "";
 
     // Mettre à jour l'état du jeu
     game.current_turn =
@@ -75,7 +110,7 @@ export class ChessService {
     game.board_state = JSON.stringify(boardState);
     game.moves_history = JSON.stringify([
       ...movesHistory,
-      { from, to, timestamp: new Date() },
+      { from, to, piece, timestamp: new Date() },
     ]);
 
     await game.save();
