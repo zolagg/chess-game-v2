@@ -36,7 +36,7 @@ export class UserController extends Controller {
   // Crée un nouvel utilisateur
   @Post("/")
   public async createUser(
-    @Body() requestBody: UserInputDTO,
+    @Body() requestBody: UserInputDTO
   ): Promise<UserOutputDTO> {
     const { username, password } = requestBody;
     return userService.createUser(username, password);
@@ -52,7 +52,7 @@ export class UserController extends Controller {
   @Patch("{id}")
   public async updateUser(
     @Path() id: number,
-    @Body() requestBody: UserInputPatchDTO,
+    @Body() requestBody: UserInputPatchDTO
   ): Promise<UserOutputDTO> {
     const { username, password } = requestBody;
     return userService.updateUser(id, username, password);
