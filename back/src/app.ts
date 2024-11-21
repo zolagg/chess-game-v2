@@ -1,6 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
+import cors from 'cors';
 
 import { RegisterRoutes } from "./routes/index"; // tsoa va générer ce fichier
 import errorHandler from "./middlewares/errorHandler";
@@ -21,6 +22,11 @@ app.use(
     },
   })
 );
+
+app.use(cors({
+  origin: 'http://localhost:5173', // Your Vue.js dev server
+  credentials: true
+}));
 
 RegisterRoutes(app);
 

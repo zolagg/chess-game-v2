@@ -1,5 +1,11 @@
 import { createApp } from 'vue'
-import './style.css'
+import { createPinia } from 'pinia'
 import App from './App.vue'
+import axios from 'axios'
 
-createApp(App).mount('#app')
+// Set base URL for axios
+axios.defaults.baseURL = 'http://localhost:8000'
+
+const app = createApp(App)
+app.use(createPinia())
+app.mount('#app')
