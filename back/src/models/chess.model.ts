@@ -4,7 +4,7 @@ import { User } from "./user.model";
 
 export enum ChessColor {
   WHITE = "WHITE",
-  BLACK = "BLACK"
+  BLACK = "BLACK",
 }
 
 export enum ChessPieceType {
@@ -13,29 +13,30 @@ export enum ChessPieceType {
   KNIGHT = "KNIGHT",
   BISHOP = "BISHOP",
   QUEEN = "QUEEN",
-  KING = "KING"
+  KING = "KING",
 }
 
 export interface ChessGameAttributes {
   id?: number;
-  white_player_id: number;
-  black_player_id: number;
+  user_id: number;
   current_turn: ChessColor;
-  board_state: string; // JSON string représentant l'état du plateau
-  moves_history: string; // JSON string représentant l'historique des coups
+  board_state: string;
+  moves_history: string;
   is_finished: boolean;
-  winner_id?: number;
+  winner_color?: ChessColor;
 }
 
-export class ChessGame extends Model<ChessGameAttributes> implements ChessGameAttributes {
+export class ChessGame
+  extends Model<ChessGameAttributes>
+  implements ChessGameAttributes
+{
   public id!: number;
-  public white_player_id!: number;
-  public black_player_id!: number;
+  public user_id!: number;
   public current_turn!: ChessColor;
   public board_state!: string;
   public moves_history!: string;
   public is_finished!: boolean;
-  public winner_id?: number;
+  public winner_color?: ChessColor;
 }
 
 ChessGame.init(
@@ -45,15 +46,7 @@ ChessGame.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    white_player_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: User,
-        key: "id",
-      },
-    },
-    black_player_id: {
+    user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
@@ -80,13 +73,9 @@ ChessGame.init(
       allowNull: false,
       defaultValue: false,
     },
-    winner_id: {
-      type: DataTypes.INTEGER,
+    winner_color: {
+      type: DataTypes.ENUM(...Object.values(ChessColor)),
       allowNull: true,
-      references: {
-        model: User,
-        key: "id",
-      },
     },
   },
   {
@@ -95,6 +84,4 @@ ChessGame.init(
   }
 );
 
-ChessGame.belongsTo(User, { foreignKey: "white_player_id", as: "whitePlayer" });
-ChessGame.belongsTo(User, { foreignKey: "black_player_id", as: "blackPlayer" });
-ChessGame.belongsTo(User, { foreignKey: "winner_id", as: "winner" });
+ChessGame.belongsTo(User, { foreignKey: "user_id", as: "user" });

@@ -25,9 +25,14 @@ export class AuthenticationService {
     // Vérifie si le mot de passe est correct
     if (password === decodedPassword) {
       // Si l'utilisateur est authentifié, on génère un JWT
-      const token = jwt.sign({ username: user.username }, JWT_SECRET, {
-        expiresIn: "1h",
-      });
+      const token = jwt.sign(
+        {
+          username: user.username,
+          id: user.id, // Ajouter l'ID ici
+        },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
       return token;
     } else {
       let error = new Error("Wrong password");

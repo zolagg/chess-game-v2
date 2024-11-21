@@ -1,87 +1,30 @@
-import { ChessGame, ChessColor, ChessPieceType } from "../models/chess.model";
-import { notFound } from "../error/NotFoundError";
+import { ChessGame, ChessColor } from "../models/chess.model";
 import { User } from "../models/user.model";
-
-interface ChessPiece {
-  type: ChessPieceType;
-  color: ChessColor;
-  position: string;
-}
-
-interface ChessMove {
-  piece: ChessPiece;
-  from: string;
-  to: string;
-  timestamp: Date;
-}
+import { notFound } from "../error/NotFoundError";
 
 export class ChessService {
-  startNewGame(): import("../dto/chess.dto").ChessGameStateDTO | PromiseLike<import("../dto/chess.dto").ChessGameStateDTO> {
-      throw new Error("Method not implemented.");
-  }
-  private readonly INITIAL_BOARD_STATE = this.getInitialBoardState();
+  private readonly INITIAL_BOARD_STATE = [
+    // Définir votre état initial du plateau ici
+    // Exemple simplifié :
+    ["BR", "BN", "BB", "BQ", "BK", "BB", "BN", "BR"],
+    ["BP", "BP", "BP", "BP", "BP", "BP", "BP", "BP"],
+    ["", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", ""],
+    ["WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP"],
+    ["WR", "WN", "WB", "WQ", "WK", "WB", "WN", "WR"],
+  ];
 
-  private getInitialBoardState(): ChessPiece[] {
-    // Initialisation du plateau avec toutes les pièces
-    const pieces: ChessPiece[] = [];
-
-    // Ajout des pions
-    for (let i = 0; i < 8; i++) {
-      pieces.push({
-        type: ChessPieceType.PAWN,
-        color: ChessColor.WHITE,
-        position: `${String.fromCharCode(97 + i)}2`,
-      });
-      pieces.push({
-        type: ChessPieceType.PAWN,
-        color: ChessColor.BLACK,
-        position: `${String.fromCharCode(97 + i)}7`,
-      });
+  public async createGame(userId: number): Promise<ChessGame> {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw notFound("User");
     }
-
-    // Ajout des autres pièces
-    const setupPieces = [
-      ChessPieceType.ROOK,
-      ChessPieceType.KNIGHT,
-      ChessPieceType.BISHOP,
-      ChessPieceType.QUEEN,
-      ChessPieceType.KING,
-      ChessPieceType.BISHOP,
-      ChessPieceType.KNIGHT,
-      ChessPieceType.ROOK,
-    ];
-
-    setupPieces.forEach((type, index) => {
-      pieces.push({
-        type,
-        color: ChessColor.WHITE,
-        position: `${String.fromCharCode(97 + index)}1`,
-      });
-      pieces.push({
-        type,
-        color: ChessColor.BLACK,
-        position: `${String.fromCharCode(97 + index)}8`,
-      });
-    });
-
-    return pieces;
-  }
-
-  public async createGame(
-    whitePlayerId: number,
-    blackPlayerId: number
-  ): Promise<ChessGame> {
-    // Vérifier que les joueurs existent
-    const whitePlayer = await User.findByPk(whitePlayerId);
-    const blackPlayer = await User.findByPk(blackPlayerId);
-
-    if (!whitePlayer || !blackPlayer) {
-      throw notFound("Player");
-    }
+    console.log("userId", userId);
 
     return ChessGame.create({
-      white_player_id: whitePlayerId,
-      black_player_id: blackPlayerId,
+      user_id: userId,
       current_turn: ChessColor.WHITE,
       board_state: JSON.stringify(this.INITIAL_BOARD_STATE),
       moves_history: "[]",
@@ -89,17 +32,18 @@ export class ChessService {
     });
   }
 
-  public async getGame(gameId: number): Promise<ChessGame> {
+  public async getGame(gameId: number, userId: number): Promise<ChessGame> {
     const game = await ChessGame.findByPk(gameId, {
-      include: [
-        { model: User, as: "whitePlayer" },
-        { model: User, as: "blackPlayer" },
-        { model: User, as: "winner" },
-      ],
+      include: [{ model: User, as: "user" }],
     });
 
     if (!game) {
       throw notFound("Game");
+    }
+
+    // Vérifier que l'utilisateur est bien le propriétaire de la partie
+    if (game.user_id !== userId) {
+      throw new Error("Not authorized to access this game");
     }
 
     return game;
@@ -107,24 +51,14 @@ export class ChessService {
 
   public async makeMove(
     gameId: number,
-    playerId: number,
+    userId: number,
     from: string,
     to: string
   ): Promise<ChessGame> {
-    const game = await this.getGame(gameId);
+    const game = await this.getGame(gameId, userId);
 
-    // Vérifier que la partie n'est pas terminée
     if (game.is_finished) {
       throw new Error("Game is already finished");
-    }
-
-    // Vérifier que c'est bien le tour du joueur
-    const isWhiteTurn = game.current_turn === ChessColor.WHITE;
-    if (
-      (isWhiteTurn && game.white_player_id !== playerId) ||
-      (!isWhiteTurn && game.black_player_id !== playerId)
-    ) {
-      throw new Error("Not your turn");
     }
 
     // Valider et effectuer le mouvement
@@ -134,7 +68,10 @@ export class ChessService {
     // TODO: Implémenter la validation des mouvements selon les règles des échecs
 
     // Mettre à jour l'état du jeu
-    game.current_turn = isWhiteTurn ? ChessColor.BLACK : ChessColor.WHITE;
+    game.current_turn =
+      game.current_turn === ChessColor.WHITE
+        ? ChessColor.BLACK
+        : ChessColor.WHITE;
     game.board_state = JSON.stringify(boardState);
     game.moves_history = JSON.stringify([
       ...movesHistory,
@@ -145,21 +82,46 @@ export class ChessService {
     return game;
   }
 
-  public async resignGame(
-    gameId: number,
-    playerId: number
-  ): Promise<ChessGame> {
-    const game = await this.getGame(gameId);
+  public async resignGame(gameId: number, userId: number): Promise<ChessGame> {
+    const game = await this.getGame(gameId, userId);
 
     if (game.is_finished) {
       throw new Error("Game is already finished");
     }
 
     game.is_finished = true;
-    game.winner_id =
-      playerId === game.white_player_id
-        ? game.black_player_id
-        : game.white_player_id;
+    game.winner_color = ChessColor.BLACK; // Si le joueur (blanc) abandonne, le noir gagne
+    await game.save();
+
+    return game;
+  }
+
+  // Méthode pour simuler le coup de l'ordinateur (joueur noir)
+  public async makeComputerMove(
+    gameId: number,
+    userId: number
+  ): Promise<ChessGame> {
+    const game = await this.getGame(gameId, userId);
+
+    if (game.is_finished || game.current_turn !== ChessColor.BLACK) {
+      throw new Error("Not computer's turn");
+    }
+
+    // TODO: Implémenter la logique de l'IA pour choisir un coup
+    // Pour l'instant, on fait un mouvement aléatoire simple
+
+    const boardState = JSON.parse(game.board_state);
+    const movesHistory = JSON.parse(game.moves_history);
+
+    // Simuler un mouvement de l'ordinateur
+    // TODO: Implémenter une vraie logique de jeu
+
+    game.current_turn = ChessColor.WHITE;
+    game.board_state = JSON.stringify(boardState);
+    game.moves_history = JSON.stringify([
+      ...movesHistory,
+      { from: "auto", to: "auto", timestamp: new Date() },
+    ]);
 
     await game.save();
     return game;
