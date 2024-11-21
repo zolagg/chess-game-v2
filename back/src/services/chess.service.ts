@@ -1,6 +1,12 @@
 import { ChessGame, ChessColor } from "../models/chess.model";
 import { User } from "../models/user.model";
 import { notFound } from "../error/NotFoundError";
+import { Pawn } from "../chess/pieces/Pawn";
+import { Rook } from "../chess/pieces/Rook";
+import { Knight } from "../chess/pieces/Knight";
+import { Bishop } from "../chess/pieces/Bishop";
+import { Queen } from "../chess/pieces/Queen";
+import { King } from "../chess/pieces/King";
 
 export class ChessService {
   private readonly INITIAL_BOARD_STATE = [
@@ -64,16 +70,27 @@ export class ChessService {
     const boardState = JSON.parse(game.board_state);
     const movesHistory = JSON.parse(game.moves_history);
 
-    // Vérifier la pièce de départ
+    // Convert chess notation (e.g., "e2") to array indices
     const [fromFile, fromRank] = from.split("");
-    const piece =
-      boardState[8 - parseInt(fromRank)][fromFile.charCodeAt(0) - 97];
+    const [toFile, toRank] = to.split("");
+
+    const fromPosition: [number, number] = [
+      fromFile.charCodeAt(0) - 97,
+      8 - parseInt(fromRank),
+    ];
+    const toPosition: [number, number] = [
+      toFile.charCodeAt(0) - 97,
+      8 - parseInt(toRank),
+    ];
+
+    // Get the piece at the starting position
+    const piece = boardState[fromPosition[1]][fromPosition[0]];
 
     if (!piece) {
       throw new Error("No piece at starting position");
     }
 
-    // Vérifier si la pièce appartient au joueur dont c'est le tour
+    // Verify it's the correct player's turn
     const pieceColor = piece.startsWith("W")
       ? ChessColor.WHITE
       : ChessColor.BLACK;
@@ -81,28 +98,49 @@ export class ChessService {
       throw new Error(`Not your turn - Current turn is ${game.current_turn}`);
     }
 
-    // Vérifier si le même coup n'a pas déjà été joué
-    const lastMove =
-      movesHistory.length > 0 ? movesHistory[movesHistory.length - 1] : null;
-    if (lastMove && lastMove.from === from && lastMove.to === to) {
-      throw new Error("This exact move was just played");
+    // Create the appropriate chess piece instance
+    let chessPiece;
+    const color = piece.startsWith("W") ? ChessColor.WHITE : ChessColor.BLACK;
+
+    switch (piece.charAt(1)) {
+      case "P":
+        chessPiece = new Pawn(fromPosition, color);
+        break;
+      case "R":
+        chessPiece = new Rook(fromPosition, color);
+        break;
+      case "N":
+        chessPiece = new Knight(fromPosition, color);
+        break;
+      case "B":
+        chessPiece = new Bishop(fromPosition, color);
+        break;
+      case "Q":
+        chessPiece = new Queen(fromPosition, color);
+        break;
+      case "K":
+        chessPiece = new King(fromPosition, color);
+        break;
+      default:
+        throw new Error("Invalid piece type");
     }
 
-    // Vérifier la position d'arrivée
-    const [toFile, toRank] = to.split("");
-    const targetSquare =
-      boardState[8 - parseInt(toRank)][toFile.charCodeAt(0) - 97];
+    // Validate the move using the piece's movement rules
+    if (!chessPiece.canMoveTo(toPosition)) {
+      throw new Error("Invalid move for this piece type");
+    }
 
-    // Si la case d'arrivée contient une pièce de même couleur
-    if (targetSquare && targetSquare.startsWith(piece[0])) {
+    // Check if target square has a piece of the same color
+    const targetPiece = boardState[toPosition[1]][toPosition[0]];
+    if (targetPiece && targetPiece.startsWith(piece[0])) {
       throw new Error("Cannot capture your own piece");
     }
 
-    // Effectuer le mouvement
-    boardState[8 - parseInt(toRank)][toFile.charCodeAt(0) - 97] = piece;
-    boardState[8 - parseInt(fromRank)][fromFile.charCodeAt(0) - 97] = "";
+    // Make the move
+    boardState[toPosition[1]][toPosition[0]] = piece;
+    boardState[fromPosition[1]][fromPosition[0]] = "";
 
-    // Mettre à jour l'état du jeu
+    // Update game state
     game.current_turn =
       game.current_turn === ChessColor.WHITE
         ? ChessColor.BLACK
