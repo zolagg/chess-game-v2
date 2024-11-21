@@ -3,20 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --primary-color: #4a90e2;
-  --text-color: #333;
-  --background-color: #f9f9f9;
-  --border-color: #ddd;
-  --error-color: #dc2626;
-  --spacing: 1rem;
-  --border-radius: 5px;
+  --primary-color: theme('colors.primary');
+  --secondary-color: theme('colors.secondary');
+  --accent-color: theme('colors.accent');
+  --background-color: theme('colors.background');
+  --surface-color: theme('colors.surface');
+  --error-color: theme('colors.error');
+  --text-primary: theme('colors.text.primary');
+  --text-secondary: theme('colors.text.secondary');
 }
 
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: var(--background-color);
-  color: var(--text-color);
+  @apply bg-background text-text-primary min-h-screen;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-lg transition-all duration-200 font-medium;
+}
+
+.btn-primary {
+  @apply bg-primary text-white hover:bg-primary/90;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-white hover:bg-secondary/90;
+}
+
+.input-field {
+  @apply w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200;
+}
+
+.card {
+  @apply bg-surface rounded-xl shadow-custom p-6;
 }
 
 .auth-container {

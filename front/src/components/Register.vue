@@ -1,61 +1,84 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create your account
-        </h2>
-      </div>
-      <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-        <span class="block sm:inline">{{ error }}</span>
-      </div>
-      <form class="mt-8 space-y-6" @submit.prevent="handleRegister">
-        <div class="rounded-md shadow-sm space-y-4">
-          <div>
-            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+  <div class="flex flex-col space-y-6 p-8">
+    <div class="text-center">
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+      <p class="text-gray-600">Join us and start playing chess</p>
+    </div>
+
+    <div v-if="error" 
+      class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" 
+      role="alert">
+      <p class="font-medium">{{ error }}</p>
+    </div>
+
+    <form @submit.prevent="handleRegister" class="space-y-6">
+      <div class="space-y-4">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+            Username
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+              <i class="fas fa-user"></i>
+            </span>
             <input
               id="username"
               v-model="username"
               type="text"
               required
-              class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+              class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="Choose a username"
-            />
-          </div>
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <input
-              id="password"
-              v-model="password"
-              type="password"
-              required
-              class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-              placeholder="Choose a password"
-            />
-          </div>
-          <div>
-            <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-            <input
-              id="confirm-password"
-              v-model="confirmPassword"
-              type="password"
-              required
-              class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-              placeholder="Confirm your password"
             />
           </div>
         </div>
 
         <div>
-          <button
-            type="submit"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-          >
-            Create Account
-          </button>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+              <i class="fas fa-lock"></i>
+            </span>
+            <input
+              id="password"
+              v-model="password"
+              type="password"
+              required
+              class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="Choose a password"
+            />
+          </div>
         </div>
-      </form>
-    </div>
+
+        <div>
+          <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">
+            Confirm Password
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+              <i class="fas fa-lock"></i>
+            </span>
+            <input
+              id="confirm-password"
+              v-model="confirmPassword"
+              type="password"
+              required
+              class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="Confirm your password"
+            />
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full flex justify-center items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 space-x-2"
+      >
+        <i class="fas fa-user-plus"></i>
+        <span>Create Account</span>
+      </button>
+    </form>
   </div>
 </template>
 

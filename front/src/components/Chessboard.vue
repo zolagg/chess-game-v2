@@ -1,21 +1,83 @@
 <template>
-  <div class="chessboard">
-    <div
-      v-for="(row, rowIndex) in board"
-      :key="rowIndex"
-      class="row"
-    >
+  <div class="chess-container">
+    <div class="chessboard">
       <div
-        v-for="(square, colIndex) in row"
-        :key="colIndex"
-        :class="['square', (rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark']"
-        @click="handleSquareClick(rowIndex, colIndex)"
+        v-for="(row, rowIndex) in board"
+        :key="rowIndex"
+        class="row"
       >
-        <i :class="getPieceIcon(square)"></i>
+        <div
+          v-for="(square, colIndex) in row"
+          :key="colIndex"
+          :class="[
+            'square',
+            (rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark',
+            'relative'
+          ]"
+          @click="handleSquareClick(rowIndex, colIndex)"
+        >
+          <div class="coordinate-label">
+            {{ getSquareCoordinate(rowIndex, colIndex) }}
+          </div>
+          <i :class="[getPieceIcon(square), 'piece-icon']"></i>
+        </div>
       </div>
     </div>
   </div>
 </template>
+
+<style lang="postcss" scoped>
+.chess-container {
+  @apply flex justify-center items-center p-8;
+}
+
+.chessboard {
+  @apply grid grid-cols-8 grid-rows-8 w-[600px] h-[600px] border-4 border-secondary rounded-lg overflow-hidden shadow-2xl;
+  background: linear-gradient(45deg, #34495e, #2c3e50);
+}
+
+.row {
+  display: contents;
+}
+
+.square {
+  @apply w-full h-full flex items-center justify-center text-3xl cursor-pointer transition-all duration-200;
+}
+
+.square:hover {
+  @apply opacity-90;
+  transform: scale(0.98);
+}
+
+.light {
+  background: #f0d9b5;
+}
+
+.dark {
+  background: #b58863;
+}
+
+.piece-icon {
+  @apply transform transition-transform duration-200 hover:scale-110 z-10;
+}
+
+.white-piece {
+  @apply text-white drop-shadow-lg;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.black-piece {
+  @apply text-black drop-shadow-lg;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.coordinate-label {
+  @apply absolute text-xs font-semibold;
+  bottom: 2px;
+  right: 2px;
+  opacity: 0.6;
+}
+</style>
 
 <script setup lang="ts">
 import { ref, defineEmits } from 'vue';
@@ -58,48 +120,11 @@ const getPieceIcon = (piece: string) => {
     default: return '';
   }
 };
-</script>
 
-<style scoped>
-.chessboard {
-  display: grid;
-  grid-template-rows: repeat(8, 1fr);
-  grid-template-columns: repeat(8, 1fr);
-  width: 600px;
-  height: 600px;
-  border: 5px solid #333;
-}
-
-.row {
-  display: contents;
-}
-
-.square {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.light {
-  background-color: #f0d9b5;
-}
-
-.dark {
-  background-color: #604936;
-}
-
-.square i {
-  color: black;
-  text-shadow: 2px 2px 2px rgba(255, 255, 255, 0.8);
-
-}
-
-.white-piece {
-  color: #ffffff !important;
-  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8) !important;
-}
-</style> 
+// Add this new function
+const getSquareCoordinate = (row: number, col: number): string => {
+  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+  return `${files[col]}${ranks[row]}`;
+};
+</script> 

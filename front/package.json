@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
+    "@types/vue": "^1.0.31",
     "@vitejs/plugin-vue": "^5.1.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
