@@ -53,6 +53,15 @@ export const useAuthStore = defineStore('auth', {
       this.token = null;
       this.isAuthenticated = false;
       localStorage.removeItem('token');
+    },
+
+    initialize() {
+      const token = localStorage.getItem('token');
+      if (token) {
+        this.token = token;
+        this.isAuthenticated = true;
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      }
     }
   }
 }); 

@@ -2,37 +2,29 @@
 import { ref } from 'vue';
 import Login from './components/Login.vue';
 import Register from './components/Register.vue';
-import Chessboard from './components/Chessboard.vue';
+import Home from './components/Home.vue';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
+import { useAuthStore } from './stores/auth';
 
-const isAuthenticated = ref(false);
-
-const handleLoginSuccess = () => {
-  isAuthenticated.value = true;
-};
-
-const onSquareClicked = (square: string) => {
-  // Handle the square click event
-  console.log('Square clicked:', square);
-};
+const authStore = useAuthStore();
 </script>
 
 <template>
   <div class="container">
-    <div v-if="!isAuthenticated" class="auth-container">
+    <div v-if="!authStore.isAuthenticated" class="auth-container">
       <TabView>
         <TabPanel header="Login" value="login">
-          <Login @login-success="handleLoginSuccess" />
+          <Login />
         </TabPanel>
         <TabPanel header="Register" value="register">
-          <Register @register-success="handleLoginSuccess" />
+          <Register />
         </TabPanel>
       </TabView>
     </div>
 
-    <div v-else class="game-container">
-      <Chessboard @square-clicked="onSquareClicked" />
+    <div v-else>
+      <Home />
     </div>
   </div>
 </template>
@@ -50,11 +42,5 @@ const onSquareClicked = (square: string) => {
 .auth-container {
   width: 100%;
   max-width: 450px;
-}
-
-.game-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 </style>
