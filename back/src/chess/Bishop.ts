@@ -12,6 +12,4 @@ export class Bishop extends ChessFigure {
         // Bishop can move diagonally
         return (Math.abs(targetFile - currentFile) === Math.abs(targetRank - currentRank));
     }
-
-  
   }
