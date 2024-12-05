@@ -46,7 +46,7 @@
 
 .square:hover {
   @apply opacity-90;
-  transform: scale(0.98);
+  transform: scale(1.05);
 }
 
 .light {
