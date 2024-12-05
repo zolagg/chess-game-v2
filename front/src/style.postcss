@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: theme('colors.primary');
+  --secondary-color: theme('colors.secondary');
+  --accent-color: theme('colors.accent');
+  --background-color: theme('colors.background');
+  --surface-color: theme('colors.surface');
+  --error-color: theme('colors.error');
+  --text-primary: theme('colors.text.primary');
+  --text-secondary: theme('colors.text.secondary');
+}
+
+body {
+  @apply bg-background text-text-primary min-h-screen;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Auth Components Styles */
+.auth-content {
+  @apply w-full max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg;
+}
+
+.auth-header {
+  @apply text-center mb-8;
+}
+
+.auth-header h2 {
+  @apply text-3xl font-bold text-primary mb-2;
+}
+
+.auth-header p {
+  @apply text-text-secondary;
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+.input-field {
+  @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200;
+}
+
+.btn {
+  @apply px-6 py-3 rounded-lg transition-all duration-200 font-medium text-base;
+}
+
+.btn-primary {
+  @apply bg-primary text-white hover:bg-primary/90 transform hover:-translate-y-0.5;
+}
+
+.error {
+  @apply bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6;
+}
+
+

@@ -17,17 +17,20 @@ export class AuthenticationService {
       throw notFound("User");
     }
 
-    // Décoder le mot de passe stocké en base de données
-    const decodedPassword = Buffer.from(user.password, "base64").toString(
-      "utf-8"
-    );
+    // Encode the incoming password to compare with stored password
+    const encodedPassword = Buffer.from(password).toString('base64');
 
-    // Vérifie si le mot de passe est correct
-    if (password === decodedPassword) {
+    // Compare encoded passwords
+    if (encodedPassword === user.password) {
       // Si l'utilisateur est authentifié, on génère un JWT
-      const token = jwt.sign({ username: user.username }, JWT_SECRET, {
-        expiresIn: "1h",
-      });
+      const token = jwt.sign(
+        {
+          username: user.username,
+          id: user.id,
+        },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
       return token;
     } else {
       let error = new Error("Wrong password");

@@ -1,11 +1,5 @@
 {
-    "private": true,
-    "workspaces": [
-      "back",
-      "front"
-    ],
-    "scripts": {
-      "dev": "concurrently \"npm run dev -w back\" \"npm run dev -w front\"",
-      "build": "npm run build -w back && npm run build -w front"
-    }
+  "dependencies": {
+    "primevue": "^3.35.0"
   }
+}

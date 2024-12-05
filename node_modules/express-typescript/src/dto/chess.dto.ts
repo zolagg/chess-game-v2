@@ -13,6 +13,7 @@ export interface ChessMoveOutputDTO {
 }
 
 export interface ChessGameStateDTO {
+  gameId: number;
   board: string[][];
   currentTurn: 'WHITE' | 'BLACK';
   isCheck: boolean;

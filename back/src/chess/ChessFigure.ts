@@ -1,28 +1,30 @@
 export enum ChessColor {
-    White = "white",
-    Black = "black",
+  WHITE = "WHITE",
+  BLACK = "BLACK",
+}
+
+export abstract class ChessFigure {
+  constructor(
+    protected position: [number, number],
+    protected color: ChessColor
+  ) {}
+
+  abstract canMoveTo(targetPosition: [number, number]): boolean;
+
+  protected isValidPosition(position: [number, number]): boolean {
+    const [x, y] = position;
+    return x >= 0 && x < 8 && y >= 0 && y < 8;
   }
-  
-  export abstract class ChessFigure {
-    position: [number, number];
-    color: ChessColor;
-  
-    constructor(position: [number, number], color: ChessColor) {
-      this.position = position;
-      this.color = color;
-    }
-  
-    protected isOutOfBounds(position: [number, number]): boolean {
-        const [file, rank] = position;
-        return file >= 0 && file < 8 && rank >= 0 && rank < 8;
-    }
-  
-    abstract canMoveTo(toPosition: [number, number]): boolean;
-  
-    moveTo(toPosition: [number, number]): void {
-        if (this.canMoveTo(toPosition) && this.isOutOfBounds(toPosition)) {
-            this.position = toPosition;
-        }
-    }
+
+  protected isDiagonalMove(targetPosition: [number, number]): boolean {
+    const [fromX, fromY] = this.position;
+    const [toX, toY] = targetPosition;
+    return Math.abs(toX - fromX) === Math.abs(toY - fromY);
   }
-  
+
+  protected isStraightMove(targetPosition: [number, number]): boolean {
+    const [fromX, fromY] = this.position;
+    const [toX, toY] = targetPosition;
+    return fromX === toX || fromY === toY;
+  }
+}

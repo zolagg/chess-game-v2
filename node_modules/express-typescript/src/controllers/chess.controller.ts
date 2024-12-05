@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Path, Post, Route, Tags, Security } from "tsoa";
+import { Body, Controller, Get, Path, Post, Route, Tags, Security, Request } from "tsoa";
 import {
   ChessMoveInputDTO,
   ChessMoveOutputDTO,
@@ -12,13 +12,15 @@ import { chessService } from "../services/chess.service";
 export class ChessController extends Controller {
   // Démarrer une nouvelle partie
   @Post("/new-game")
-  public async startNewGame(): Promise<ChessGameStateDTO> {
-    const game = await chessService.createGame(0, 0); // TODO: Get player IDs from token
+  public async startNewGame(@Request() request: any): Promise<ChessGameStateDTO> {
+    const userId = request.user.id;
+    const game = await chessService.createGame(userId);
     return {
+      gameId: game.id,
       board: JSON.parse(game.board_state),
       currentTurn: game.current_turn,
-      isCheck: false, // TODO: Implement check detection
-      isCheckmate: false, // TODO: Implement checkmate detection
+      isCheck: false,
+      isCheckmate: false,
       moves: JSON.parse(game.moves_history),
     };
   }
@@ -26,14 +28,17 @@ export class ChessController extends Controller {
   // Obtenir l'état actuel de la partie
   @Get("/game-state/{gameId}")
   public async getGameState(
-    @Path() gameId: string
+    @Path() gameId: string,
+    @Request() request: any
   ): Promise<ChessGameStateDTO> {
-    const game = await chessService.getGame(parseInt(gameId));
+    const userId = request.user.id;
+    const game = await chessService.getGame(parseInt(gameId), userId);
     return {
+      gameId: game.id,
       board: JSON.parse(game.board_state),
       currentTurn: game.current_turn,
-      isCheck: false, // TODO: Implement check detection
-      isCheckmate: false, // TODO: Implement checkmate detection
+      isCheck: false,
+      isCheckmate: false,
       moves: JSON.parse(game.moves_history),
     };
   }
@@ -42,11 +47,13 @@ export class ChessController extends Controller {
   @Post("/move/{gameId}")
   public async makeMove(
     @Path() gameId: string,
-    @Body() move: ChessMoveInputDTO
+    @Body() move: ChessMoveInputDTO,
+    @Request() request: any
   ): Promise<ChessMoveOutputDTO> {
+    const userId = request.user.id;
     const game = await chessService.makeMove(
       parseInt(gameId),
-      0, // TODO: Get player ID from token
+      userId,
       move.from,
       move.to
     );
@@ -55,8 +62,8 @@ export class ChessController extends Controller {
       success: true,
       message: "Move successful",
       board: JSON.parse(game.board_state),
-      isCheck: false, // TODO: Implement check detection
-      isCheckmate: false, // TODO: Implement checkmate detection
+      isCheck: false,
+      isCheckmate: false,
     };
   }
 
@@ -72,10 +79,14 @@ export class ChessController extends Controller {
 
   // Abandonner la partie
   @Post("/resign/{gameId}")
-  public async resignGame(@Path() gameId: string): Promise<ChessMoveOutputDTO> {
+  public async resignGame(
+    @Path() gameId: string,
+    @Request() request: any
+  ): Promise<ChessMoveOutputDTO> {
+    const userId = request.user.id;
     const game = await chessService.resignGame(
       parseInt(gameId),
-      0 // TODO: Get player ID from token
+      userId
     );
 
     return {
