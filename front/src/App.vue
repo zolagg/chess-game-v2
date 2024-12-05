@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import Login from './components/Login.vue';
 import Register from './components/Register.vue';
 import Home from './components/Home.vue';
+import Header from './components/Header.vue';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import { useAuthStore } from './stores/auth';
@@ -12,29 +13,36 @@ const authStore = useAuthStore();
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-wrapper">
+    <Header />
     <Toast />
-    <div v-if="!authStore.isAuthenticated" class="auth-container">
-      <TabView>
-        <TabPanel header="Login">
-          <Login />
-        </TabPanel>
-        <TabPanel header="Register">
-          <Register />
-        </TabPanel>
-      </TabView>
-    </div>
+    <main class="main-content">
+      <div v-if="!authStore.isAuthenticated" class="auth-container">
+        <TabView>
+          <TabPanel header="Login">
+            <Login />
+          </TabPanel>
+          <TabPanel header="Register">
+            <Register />
+          </TabPanel>
+        </TabView>
+      </div>
 
-    <div v-else>
-      <Home />
-    </div>
+      <div v-else>
+        <Home />
+      </div>
+    </main>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.app-container {
-  @apply flex justify-center items-center min-h-screen p-8;
+.app-wrapper {
+  @apply min-h-screen;
   background: linear-gradient(135deg, theme('colors.background'), theme('colors.surface'));
+}
+
+.main-content {
+  @apply container mx-auto pt-24 px-4 flex justify-center items-center min-h-screen;
 }
 
 .auth-container {
