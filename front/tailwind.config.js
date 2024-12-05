@@ -20,6 +20,15 @@ export default {
       },
       boxShadow: {
         'custom': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      },
+      keyframes: {
+        fadeIn: {
+          'from': { opacity: '0', transform: 'translateY(-10px)' },
+          'to': { opacity: '1', transform: 'translateY(0)' }
+        }
+      },
+      animation: {
+        'fadeIn': 'fadeIn 0.3s ease-out'
       }
     },
   },

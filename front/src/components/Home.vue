@@ -1,46 +1,85 @@
 <template>
-    <div class="container">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Welcome to Chess Game</h1>
-        <button
-          @click="handleLogout"
-          class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+  <div class="home-container">
+    <div class="game-section">
+      <div class="game-header">
+        <h1 class="title">Welcome to Chess Game</h1>
+        <button 
+          @click="startNewGame" 
+          class="new-game-btn"
+          :disabled="gameStore.loading"
         >
-          Logout
+          <i class="fas fa-plus mr-2"></i>
+          New Game
         </button>
       </div>
-      <div class="game-container">
-        <Chessboard @square-clicked="onSquareClicked" />
+      <div v-if="gameStore.error" class="error-message">
+        {{ gameStore.error }}
+      </div>
+      <div class="chessboard-wrapper">
+        <Chessboard 
+          :board="gameStore.board" 
+          @square-clicked="onSquareClicked" 
+        />
       </div>
     </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { useRouter } from 'vue-router';
-  import { useAuthStore } from '../stores/auth';
-  import Chessboard from './Chessboard.vue';
-  
-  const router = useRouter();
-  const authStore = useAuthStore();
-  
-  const onSquareClicked = (square: string) => {
-    console.log('Square clicked:', square);
-  };
-  
-  const handleLogout = () => {
-    authStore.logout();
-  };
-  </script>
-  
-  <style scoped>
-  .container {
-    padding: 2rem;
-  }
-  
-  .game-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 2rem;
-  }
-  </style>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
+import { useGameStore } from '../stores/game';
+import Chessboard from './Chessboard.vue';
+
+const router = useRouter();
+const authStore = useAuthStore();
+const gameStore = useGameStore();
+
+const startNewGame = async () => {
+  await gameStore.startNewGame();
+};
+
+const onSquareClicked = (square: string) => {
+  console.log('Square clicked:', square);
+};
+
+onMounted(() => {
+  startNewGame();
+});
+</script>
+
+<style lang="postcss" scoped>
+.home-container {
+  @apply h-[calc(100vh-4rem)] flex flex-col;
+}
+
+.game-section {
+  @apply flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex flex-col;
+}
+
+.game-header {
+  @apply flex justify-center items-center mb-8;
+}
+
+.title {
+  @apply text-3xl font-bold;
+  background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.chessboard-wrapper {
+  @apply flex-1 flex justify-center items-center;
+}
+
+.new-game-btn {
+  @apply px-4 py-2 rounded-lg bg-primary text-white font-medium
+         flex items-center gap-2 hover:bg-primary/90 transition-all duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.error-message {
+  @apply text-red-500 text-center mb-4 p-4 bg-red-50 rounded-lg;
+}
+</style>
