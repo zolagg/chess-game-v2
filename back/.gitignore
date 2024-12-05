@@ -1,2 +1,12 @@
-node_modules
-build
+node_modules/
+dist/
+build/
+*.sqlite
+*.sqlite3
+.env
+.env.local
+.env.*.local
+logs/
+*.log
+coverage/
+.DS_Store
