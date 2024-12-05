@@ -1,8 +1,18 @@
 import { ChessFigure, ChessColor } from "../ChessFigure";
 
 export class Bishop extends ChessFigure {
-  canMoveTo(targetPosition: [number, number]): boolean {
+  canMoveTo(targetPosition: [number, number], boardState: string[][]): boolean {
     if (!this.isValidPosition(targetPosition)) return false;
-    return this.isDiagonalMove(targetPosition);
+    if (!this.isDiagonalMove(targetPosition)) return false;
+    
+    // Check if target square has our own piece
+    const [toX, toY] = targetPosition;
+    const targetPiece = boardState[toY][toX];
+    if (targetPiece !== "") {
+      const targetColor = targetPiece[0] === "W" ? ChessColor.WHITE : ChessColor.BLACK;
+      if (targetColor === this.color) return false;
+    }
+    
+    return this.isPathClear(targetPosition, boardState);
   }
 } 

@@ -1,27 +1,35 @@
-import { defineStore } from 'pinia';
-import axios from '../config/axios';
+import { defineStore } from "pinia";
+import axios from "../config/axios";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 interface GameState {
   gameId: number | null;
   board: string[][];
-  currentTurn: 'WHITE' | 'BLACK';
+  currentTurn: "WHITE" | "BLACK";
   isCheck: boolean;
   isCheckmate: boolean;
   moves: any[];
   loading: boolean;
   error: string | null;
+  isFinished: boolean;
+  winnerColor: "WHITE" | "BLACK" | null;
 }
 
-export const useGameStore = defineStore('game', {
+export const useGameStore = defineStore("game", {
   state: (): GameState => ({
     gameId: null,
-    board: Array(8).fill(null).map(() => Array(8).fill('')),
-    currentTurn: 'WHITE',
+    board: Array(8)
+      .fill(null)
+      .map(() => Array(8).fill("")),
+    currentTurn: "WHITE",
     isCheck: false,
     isCheckmate: false,
     moves: [],
     loading: false,
     error: null,
+    isFinished: false,
+    winnerColor: null,
   }),
 
   actions: {
@@ -29,27 +37,29 @@ export const useGameStore = defineStore('game', {
       this.loading = true;
       this.error = null;
       try {
-        console.log('Starting new game...');
-        const response = await axios.post('/chess/new-game');
-        console.log('New game response:', response.data);
+        console.log("Starting new game...");
+        const response = await axios.post("/chess/new-game");
+        console.log("New game response:", response.data);
         this.board = response.data.board;
         this.currentTurn = response.data.currentTurn;
         this.isCheck = response.data.isCheck;
         this.isCheckmate = response.data.isCheckmate;
         this.moves = response.data.moves;
         this.gameId = response.data.gameId;
-        console.log('Game state after update:', {
+        console.log("Game state after update:", {
           gameId: this.gameId,
           board: this.board,
-          currentTurn: this.currentTurn
+          currentTurn: this.currentTurn,
         });
         return true;
       } catch (error: any) {
-        console.error('Start game error:', error);
-        if (error.code === 'ERR_NETWORK') {
-          this.error = 'Unable to connect to the game server. Please check your connection.';
+        console.error("Start game error:", error);
+        if (error.code === "ERR_NETWORK") {
+          this.error =
+            "Unable to connect to the game server. Please check your connection.";
         } else {
-          this.error = error.response?.data?.message || 'Failed to start new game';
+          this.error =
+            error.response?.data?.message || "Failed to start new game";
         }
         return false;
       } finally {
@@ -62,33 +72,61 @@ export const useGameStore = defineStore('game', {
       this.error = null;
       try {
         if (!this.gameId) {
-          throw new Error('No active game');
+          throw new Error("No active game");
         }
-
-        const fromRow = 8 - parseInt(from[1]);
-        const fromCol = from.charCodeAt(0) - 97;
-        const piece = this.board[fromRow][fromCol];
 
         const response = await axios.post(`/chess/move/${this.gameId}`, {
           from,
           to,
-          piece
         });
-        
+
         if (response.data.board) {
           this.board = response.data.board;
-          this.isCheck = response.data.isCheck || false;
-          this.isCheckmate = response.data.isCheckmate || false;
+
+          // Handle game over
+          if (response.data.isFinished) {
+            this.isFinished = true;
+            this.winnerColor = response.data.winnerColor;
+
+            // Show game over message
+            this.error = `Game Over - ${response.data.winnerColor} wins!`;
+
+            // Redirect to home after a short delay
+            setTimeout(() => {
+              router.push("/");
+            }, 2000);
+          }
         }
-        
+
         return true;
       } catch (error: any) {
-        console.error('Move error:', error);
-        this.error = error.response?.data?.message || 'Failed to make move';
+        console.error("Move error:", error);
+        this.error = error.response?.data?.message || "Failed to make move";
         return false;
       } finally {
         this.loading = false;
       }
-    }
+    },
+    // Add after makeMove method in the actions object
+    async getPossibleMoves(position: string) {
+      this.loading = true;
+      this.error = null;
+      try {
+        if (!this.gameId) {
+          throw new Error("No active game");
+        }
+        const response = await axios.get(
+          `/chess/possible-moves/${this.gameId}/${position}`
+        );
+        return response.data;
+      } catch (error: any) {
+        console.error("Error getting possible moves:", error);
+        this.error =
+          error.response?.data?.message || "Failed to get possible moves";
+        return [];
+      } finally {
+        this.loading = false;
+      }
+    },
   },
-}); 
+});

@@ -124,6 +124,16 @@
 					},
 					"isCheckmate": {
 						"type": "boolean"
+					},
+					"isFinished": {
+						"type": "boolean"
+					},
+					"winnerColor": {
+						"type": "string",
+						"enum": [
+							"WHITE",
+							"BLACK"
+						]
 					}
 				},
 				"required": [

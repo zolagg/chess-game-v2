@@ -126,7 +126,7 @@ export class ChessService {
     }
 
     // Validate the move using the piece's movement rules
-    if (!chessPiece.canMoveTo(toPosition)) {
+    if (!chessPiece.canMoveTo(toPosition, boardState)) {
       throw new Error("Invalid move for this piece type");
     }
 
@@ -135,6 +135,9 @@ export class ChessService {
     if (targetPiece && targetPiece.startsWith(piece[0])) {
       throw new Error("Cannot capture your own piece");
     }
+
+    // Check if a king was captured
+    await this.checkKingCapture(targetPiece, game);
 
     // Make the move
     boardState[toPosition[1]][toPosition[0]] = piece;
@@ -198,6 +201,15 @@ export class ChessService {
 
     await game.save();
     return game;
+  }
+
+  public async checkKingCapture(targetPiece: string, game: ChessGame): Promise<void> {
+    if (targetPiece === "WK" || targetPiece === "BK") {
+      game.is_finished = true;
+      // Set winner to opposite color of the captured king
+      game.winner_color = targetPiece[0] === "W" ? ChessColor.BLACK : ChessColor.WHITE;
+      await game.save();
+    }
   }
 }
 

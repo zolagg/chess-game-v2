@@ -60,10 +60,12 @@ export class ChessController extends Controller {
 
     return {
       success: true,
-      message: "Move successful",
+      message: game.is_finished ? `Game Over - ${game.winner_color} wins!` : "Move successful",
       board: JSON.parse(game.board_state),
       isCheck: false,
       isCheckmate: false,
+      isFinished: game.is_finished,
+      winnerColor: game.winner_color
     };
   }
 

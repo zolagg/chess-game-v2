@@ -18,6 +18,21 @@
       {{ gameStore.error }}
     </div>
     
+    <div v-if="gameStore.isFinished" class="game-over-overlay">
+      <div class="game-over-content">
+        <h3 class="winner-text">
+          {{ gameStore.winnerColor === 'WHITE' ? 'White' : 'Black' }} wins!
+        </h3>
+        <button 
+          @click="startNewGame" 
+          class="new-game-btn"
+        >
+          <i class="fas fa-play mr-2"></i>
+          New Game
+        </button>
+      </div>
+    </div>
+    
     <div class="chessboard-wrapper">
       <Chessboard 
         :board="gameStore.board" 
@@ -53,6 +68,11 @@ const resignGame = async () => {
   router.push('/');
 };
 
+const startNewGame = async () => {
+  await gameStore.startNewGame();
+  router.push('/');
+};
+
 onMounted(async () => {
   await gameStore.getGameState(gameId);
 });
@@ -83,5 +103,33 @@ onMounted(async () => {
 
 .chessboard-wrapper {
   @apply flex justify-center items-center mt-8;
+}
+
+.game-over-overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm
+         flex items-center justify-center z-50;
+}
+
+.game-over-content {
+  @apply bg-white p-8 rounded-xl shadow-xl
+         flex flex-col items-center gap-6
+         animate-fadeIn;
+}
+
+.winner-text {
+  @apply text-2xl font-bold text-primary;
+}
+
+.new-game-btn {
+  @apply px-6 py-3 rounded-xl bg-primary text-white font-semibold
+         flex items-center justify-center gap-2
+         transform transition-all duration-200
+         hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-lg;
+  background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 </style> 

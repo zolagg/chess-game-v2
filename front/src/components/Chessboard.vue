@@ -17,9 +17,11 @@
                 'square',
                 (rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark',
                 {
-                  'selected': selectedSquare?.row === rowIndex && selectedSquare?.col === colIndex,
-                  'highlighted': isHighlighted(rowIndex, colIndex)
-                }
+                  selected:
+                    selectedSquare?.row === rowIndex &&
+                    selectedSquare?.col === colIndex,
+                  highlighted: isHighlighted(rowIndex, colIndex),
+                },
               ]"
               @click="handleSquareClick(rowIndex, colIndex)"
             >
@@ -97,9 +99,8 @@
 }
 
 .highlighted::before {
-  content: '';
+  content: "";
   @apply absolute w-3 h-3 bg-black/60 rounded-full;
-
 }
 
 .highlighted:hover::before {
@@ -133,13 +134,13 @@
 }
 </style>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 
 const props = defineProps<{
-  board: string[][]
+  board: string[][];
 }>();
 
-const emit = defineEmits(['square-clicked']);
+const emit = defineEmits(["square-clicked"]);
 
 // Add state for selected piece
 const selectedSquare = ref<{ row: number; col: number } | null>(null);
@@ -148,23 +149,26 @@ const selectedSquare = ref<{ row: number; col: number } | null>(null);
 const isHighlighted = (rowIndex: number, colIndex: number) => {
   if (!selectedSquare.value) return false;
   // For now, highlight all empty squares as possible moves
-  return props.board[rowIndex][colIndex] === '';
+  return props.board[rowIndex][colIndex] === "";
 };
 
 const handleSquareClick = (rowIndex: number, colIndex: number) => {
   if (selectedSquare.value) {
     // If a piece is already selected, try to move it
-    if (rowIndex !== selectedSquare.value.row || colIndex !== selectedSquare.value.col) {
-      emit('square-clicked', {
+    if (
+      rowIndex !== selectedSquare.value.row ||
+      colIndex !== selectedSquare.value.col
+    ) {
+      emit("square-clicked", {
         from: selectedSquare.value,
         to: { row: rowIndex, col: colIndex },
-        piece: props.board[selectedSquare.value.row][selectedSquare.value.col]
+        piece: props.board[selectedSquare.value.row][selectedSquare.value.col],
       });
     }
     selectedSquare.value = null;
   } else {
     // Select the piece if it's not empty
-    if (props.board[rowIndex][colIndex] !== '') {
+    if (props.board[rowIndex][colIndex] !== "") {
       selectedSquare.value = { row: rowIndex, col: colIndex };
     }
   }
@@ -174,20 +178,33 @@ const handleSquareClick = (rowIndex: number, colIndex: number) => {
 const getPieceIcon = (piece: string) => {
   switch (piece) {
     // Black pieces
-    case 'BR': return 'fas fa-chess-rook fa-xl';
-    case 'BN': return 'fas fa-chess-knight fa-xl';
-    case 'BB': return 'fas fa-chess-bishop fa-xl';
-    case 'BQ': return 'fas fa-chess-queen fa-xl';
-    case 'BK': return 'fas fa-chess-king fa-xl';
-    case 'BP': return 'fas fa-chess-pawn fa-xl';
+    case "BR":
+      return "fas fa-chess-rook fa-xl";
+    case "BN":
+      return "fas fa-chess-knight fa-xl";
+    case "BB":
+      return "fas fa-chess-bishop fa-xl";
+    case "BQ":
+      return "fas fa-chess-queen fa-xl";
+    case "BK":
+      return "fas fa-chess-king fa-xl";
+    case "BP":
+      return "fas fa-chess-pawn fa-xl";
     // White pieces
-    case 'WR': return 'fas fa-chess-rook white-piece fa-xl';
-    case 'WN': return 'fas fa-chess-knight white-piece fa-xl';
-    case 'WB': return 'fas fa-chess-bishop white-piece fa-xl';
-    case 'WQ': return 'fas fa-chess-queen white-piece fa-xl';
-    case 'WK': return 'fas fa-chess-king white-piece fa-xl';
-    case 'WP': return 'fas fa-chess-pawn white-piece fa-xl';
-    default: return '';
+    case "WR":
+      return "fas fa-chess-rook white-piece fa-xl";
+    case "WN":
+      return "fas fa-chess-knight white-piece fa-xl";
+    case "WB":
+      return "fas fa-chess-bishop white-piece fa-xl";
+    case "WQ":
+      return "fas fa-chess-queen white-piece fa-xl";
+    case "WK":
+      return "fas fa-chess-king white-piece fa-xl";
+    case "WP":
+      return "fas fa-chess-pawn white-piece fa-xl";
+    default:
+      return "";
   }
 };
-</script> 
+</script>

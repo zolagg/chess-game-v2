@@ -9,7 +9,7 @@ export abstract class ChessFigure {
     protected color: ChessColor
   ) {}
 
-  abstract canMoveTo(targetPosition: [number, number]): boolean;
+  abstract canMoveTo(targetPosition: [number, number], boardState: string[][]): boolean;
 
   protected isValidPosition(position: [number, number]): boolean {
     const [x, y] = position;
@@ -26,5 +26,28 @@ export abstract class ChessFigure {
     const [fromX, fromY] = this.position;
     const [toX, toY] = targetPosition;
     return fromX === toX || fromY === toY;
+  }
+
+  protected isPathClear(targetPosition: [number, number], boardState: string[][]): boolean {
+    const [fromX, fromY] = this.position;
+    const [toX, toY] = targetPosition;
+    
+    // Calculate direction
+    const dx = Math.sign(toX - fromX);
+    const dy = Math.sign(toY - fromY);
+    
+    let currentX = fromX + dx;
+    let currentY = fromY + dy;
+    
+    // Check each square along the path
+    while (currentX !== toX || currentY !== toY) {
+      if (boardState[currentY][currentX] !== "") {
+        return false; // Path is blocked
+      }
+      currentX += dx;
+      currentY += dy;
+    }
+    
+    return true;
   }
 }
