@@ -11,13 +11,13 @@ const authStore = useAuthStore();
 </script>
 
 <template>
-  <div class="container">
+  <div class="app-container">
     <div v-if="!authStore.isAuthenticated" class="auth-container">
       <TabView>
-        <TabPanel header="Login" value="login">
+        <TabPanel header="Login">
           <Login />
         </TabPanel>
-        <TabPanel header="Register" value="register">
+        <TabPanel header="Register">
           <Register />
         </TabPanel>
       </TabView>
@@ -29,18 +29,38 @@ const authStore = useAuthStore();
   </div>
 </template>
 
-<style scoped>
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
-  background-color: var(--surface-ground);
+<style lang="postcss" scoped>
+.app-container {
+  @apply flex justify-center items-center min-h-screen p-8;
+  background: linear-gradient(135deg, theme('colors.background'), theme('colors.surface'));
 }
 
 .auth-container {
-  width: 100%;
-  max-width: 450px;
+  @apply w-full max-w-md;
+}
+
+:deep(.p-tabview) {
+  @apply bg-transparent;
+}
+
+:deep(.p-tabview-panels) {
+  @apply p-0 mt-4;
+}
+
+:deep(.p-tabview-nav) {
+  @apply flex gap-2 mb-6 border-none;
+}
+
+:deep(.p-tabview-nav-link) {
+  @apply px-6 py-3 rounded-lg text-text-secondary font-medium
+         transition-all duration-200 bg-white/50 backdrop-blur-sm
+         hover:text-primary hover:bg-white/80;
+}
+
+:deep(.p-tabview-selected .p-tabview-nav-link) {
+  @apply text-primary bg-white shadow-md;
+  background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 </style>
