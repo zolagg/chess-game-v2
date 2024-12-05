@@ -1,4 +1,5 @@
 <template>
+  <Toast position="top-right" />
   <div class="auth-form">
     <div class="auth-header">
       <h2>Create Account</h2>
@@ -133,8 +134,11 @@ button {
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
+import { useToast } from 'primevue/usetoast';
 
 const authStore = useAuthStore();
+const toast = useToast();
+
 const username = ref('');
 const password = ref('');
 const confirmPassword = ref('');
@@ -143,18 +147,40 @@ const error = ref('');
 const handleRegister = async () => {
   error.value = '';
   if (!username.value || !password.value || !confirmPassword.value) {
-    error.value = 'Please fill in all fields';
+    toast.add({
+      severity: 'error',
+      summary: 'Validation Error',
+      detail: 'Please fill in all fields',
+      life: 3000
+    });
     return;
   }
 
   if (password.value !== confirmPassword.value) {
-    error.value = 'Passwords do not match';
+    toast.add({
+      severity: 'error',
+      summary: 'Validation Error',
+      detail: 'Passwords do not match',
+      life: 3000
+    });
     return;
   }
 
   const success = await authStore.register(username.value, password.value);
   if (!success) {
-    error.value = 'Registration failed';
+    toast.add({
+      severity: 'error',
+      summary: 'Registration Failed',
+      detail: 'Unable to create account. Please try again.',
+      life: 3000
+    });
+  } else {
+    toast.add({
+      severity: 'success',
+      summary: 'Welcome!',
+      detail: 'Account created successfully',
+      life: 3000
+    });
   }
 };
 </script>

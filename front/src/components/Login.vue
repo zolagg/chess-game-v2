@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
+import { useToast } from 'primevue/usetoast';
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 const username = ref('');
 const password = ref('');
@@ -11,18 +13,36 @@ const error = ref('');
 const handleLogin = async () => {
   error.value = '';
   if (!username.value || !password.value) {
-    error.value = 'Please fill in all fields';
+    toast.add({
+      severity: 'error',
+      summary: 'Validation Error',
+      detail: 'Please fill in all fields',
+      life: 3000
+    });
     return;
   }
 
   const success = await authStore.login(username.value, password.value);
   if (!success) {
-    error.value = 'Invalid credentials';
+    toast.add({
+      severity: 'error',
+      summary: 'Login Failed',
+      detail: 'Invalid credentials. Please try again.',
+      life: 3000
+    });
+  } else {
+    toast.add({
+      severity: 'success',
+      summary: 'Welcome Back!',
+      detail: 'Successfully logged in',
+      life: 3000
+    });
   }
 };
 </script>
 
 <template>
+  <Toast position="top-right" />
   <div class="auth-form">
     <div class="auth-header">
       <h2>Welcome Back!</h2>

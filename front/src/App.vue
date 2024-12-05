@@ -6,12 +6,14 @@ import Home from './components/Home.vue';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import { useAuthStore } from './stores/auth';
+import Toast from 'primevue/toast';
 
 const authStore = useAuthStore();
 </script>
 
 <template>
   <div class="app-container">
+    <Toast />
     <div v-if="!authStore.isAuthenticated" class="auth-container">
       <TabView>
         <TabPanel header="Login">
@@ -62,5 +64,25 @@ const authStore = useAuthStore();
   background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+:deep(.p-toast) {
+  @apply opacity-95;
+}
+
+:deep(.p-toast-message) {
+  @apply rounded-xl shadow-lg border-none;
+}
+
+:deep(.p-toast-message-success) {
+  @apply bg-green-50 text-green-800;
+}
+
+:deep(.p-toast-message-error) {
+  @apply bg-red-50 text-red-800;
+}
+
+:deep(.p-toast-icon-close) {
+  @apply opacity-50 hover:opacity-100 transition-opacity;
 }
 </style>
