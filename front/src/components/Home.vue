@@ -3,25 +3,50 @@
     <div class="game-section">
       <div class="game-header">
         <h1 class="title">Welcome to Chess Game</h1>
+        <button 
+          @click="startNewGame" 
+          class="new-game-btn"
+          :disabled="gameStore.loading"
+        >
+          <i class="fas fa-plus mr-2"></i>
+          New Game
+        </button>
+      </div>
+      <div v-if="gameStore.error" class="error-message">
+        {{ gameStore.error }}
       </div>
       <div class="chessboard-wrapper">
-        <Chessboard @square-clicked="onSquareClicked" />
+        <Chessboard 
+          :board="gameStore.board" 
+          @square-clicked="onSquareClicked" 
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { useGameStore } from '../stores/game';
 import Chessboard from './Chessboard.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const gameStore = useGameStore();
+
+const startNewGame = async () => {
+  await gameStore.startNewGame();
+};
 
 const onSquareClicked = (square: string) => {
   console.log('Square clicked:', square);
 };
+
+onMounted(() => {
+  startNewGame();
+});
 </script>
 
 <style lang="postcss" scoped>
@@ -46,5 +71,15 @@ const onSquareClicked = (square: string) => {
 
 .chessboard-wrapper {
   @apply flex-1 flex justify-center items-center;
+}
+
+.new-game-btn {
+  @apply px-4 py-2 rounded-lg bg-primary text-white font-medium
+         flex items-center gap-2 hover:bg-primary/90 transition-all duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.error-message {
+  @apply text-red-500 text-center mb-4 p-4 bg-red-50 rounded-lg;
 }
 </style>
