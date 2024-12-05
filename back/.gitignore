@@ -10,3 +10,5 @@ logs/
 *.log
 coverage/
 .DS_Store
+# Documentation
+docs/swagger/
