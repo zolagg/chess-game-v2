@@ -1,6 +1,12 @@
 import { ChessGame, ChessColor } from "../models/chess.model";
 import { User } from "../models/user.model";
 import { notFound } from "../error/NotFoundError";
+import { Pawn } from "../chess/pieces/Pawn";
+import { Rook } from "../chess/pieces/Rook";
+import { Knight } from "../chess/pieces/Knight";
+import { Bishop } from "../chess/pieces/Bishop";
+import { Queen } from "../chess/pieces/Queen";
+import { King } from "../chess/pieces/King";
 
 export class ChessService {
   private readonly INITIAL_BOARD_STATE = [
@@ -61,13 +67,80 @@ export class ChessService {
       throw new Error("Game is already finished");
     }
 
-    // Valider et effectuer le mouvement
     const boardState = JSON.parse(game.board_state);
     const movesHistory = JSON.parse(game.moves_history);
 
-    // TODO: Implémenter la validation des mouvements selon les règles des échecs
+    // Convert chess notation (e.g., "e2") to array indices
+    const [fromFile, fromRank] = from.split("");
+    const [toFile, toRank] = to.split("");
 
-    // Mettre à jour l'état du jeu
+    const fromPosition: [number, number] = [
+      fromFile.charCodeAt(0) - 97,
+      8 - parseInt(fromRank),
+    ];
+    const toPosition: [number, number] = [
+      toFile.charCodeAt(0) - 97,
+      8 - parseInt(toRank),
+    ];
+
+    // Get the piece at the starting position
+    const piece = boardState[fromPosition[1]][fromPosition[0]];
+
+    if (!piece) {
+      throw new Error("No piece at starting position");
+    }
+
+    // Verify it's the correct player's turn
+    const pieceColor = piece.startsWith("W")
+      ? ChessColor.WHITE
+      : ChessColor.BLACK;
+    if (pieceColor !== game.current_turn) {
+      throw new Error(`Not your turn - Current turn is ${game.current_turn}`);
+    }
+
+    // Create the appropriate chess piece instance
+    let chessPiece;
+    const color = piece.startsWith("W") ? ChessColor.WHITE : ChessColor.BLACK;
+
+    switch (piece.charAt(1)) {
+      case "P":
+        chessPiece = new Pawn(fromPosition, color);
+        break;
+      case "R":
+        chessPiece = new Rook(fromPosition, color);
+        break;
+      case "N":
+        chessPiece = new Knight(fromPosition, color);
+        break;
+      case "B":
+        chessPiece = new Bishop(fromPosition, color);
+        break;
+      case "Q":
+        chessPiece = new Queen(fromPosition, color);
+        break;
+      case "K":
+        chessPiece = new King(fromPosition, color);
+        break;
+      default:
+        throw new Error("Invalid piece type");
+    }
+
+    // Validate the move using the piece's movement rules
+    if (!chessPiece.canMoveTo(toPosition)) {
+      throw new Error("Invalid move for this piece type");
+    }
+
+    // Check if target square has a piece of the same color
+    const targetPiece = boardState[toPosition[1]][toPosition[0]];
+    if (targetPiece && targetPiece.startsWith(piece[0])) {
+      throw new Error("Cannot capture your own piece");
+    }
+
+    // Make the move
+    boardState[toPosition[1]][toPosition[0]] = piece;
+    boardState[fromPosition[1]][fromPosition[0]] = "";
+
+    // Update game state
     game.current_turn =
       game.current_turn === ChessColor.WHITE
         ? ChessColor.BLACK
@@ -75,7 +148,7 @@ export class ChessService {
     game.board_state = JSON.stringify(boardState);
     game.moves_history = JSON.stringify([
       ...movesHistory,
-      { from, to, timestamp: new Date() },
+      { from, to, piece, timestamp: new Date() },
     ]);
 
     await game.save();
