@@ -58,6 +58,10 @@
 			},
 			"ChessGameStateDTO": {
 				"properties": {
+					"gameId": {
+						"type": "number",
+						"format": "double"
+					},
 					"board": {
 						"items": {
 							"items": {
@@ -88,6 +92,7 @@
 					}
 				},
 				"required": [
+					"gameId",
 					"board",
 					"currentTurn",
 					"isCheck",

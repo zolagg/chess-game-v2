@@ -29,22 +29,66 @@ export const useGameStore = defineStore('game', {
       this.loading = true;
       this.error = null;
       try {
+        console.log('Starting new game...');
         const response = await axios.post('/chess/new-game');
         console.log('New game response:', response.data);
-        const { id, board, currentTurn, isCheck, isCheckmate, moves } = response.data;
-        
-        this.gameId = id;
-        this.board = board;
-        this.currentTurn = currentTurn;
-        this.isCheck = isCheck;
-        this.isCheckmate = isCheckmate;
-        this.moves = moves;
+        this.board = response.data.board;
+        this.currentTurn = response.data.currentTurn;
+        this.isCheck = response.data.isCheck;
+        this.isCheckmate = response.data.isCheckmate;
+        this.moves = response.data.moves;
+        this.gameId = response.data.gameId;
+        console.log('Game state after update:', {
+          gameId: this.gameId,
+          board: this.board,
+          currentTurn: this.currentTurn
+        });
+        return true;
       } catch (error: any) {
         console.error('Start game error:', error);
-        this.error = error.response?.data?.message || 'Failed to start new game';
+        if (error.code === 'ERR_NETWORK') {
+          this.error = 'Unable to connect to the game server. Please check your connection.';
+        } else {
+          this.error = error.response?.data?.message || 'Failed to start new game';
+        }
+        return false;
       } finally {
         this.loading = false;
       }
     },
+
+    async makeMove(from: string, to: string) {
+      this.loading = true;
+      this.error = null;
+      try {
+        if (!this.gameId) {
+          throw new Error('No active game');
+        }
+
+        const fromRow = 8 - parseInt(from[1]);
+        const fromCol = from.charCodeAt(0) - 97;
+        const piece = this.board[fromRow][fromCol];
+
+        const response = await axios.post(`/chess/move/${this.gameId}`, {
+          from,
+          to,
+          piece
+        });
+        
+        if (response.data.board) {
+          this.board = response.data.board;
+          this.isCheck = response.data.isCheck || false;
+          this.isCheckmate = response.data.isCheckmate || false;
+        }
+        
+        return true;
+      } catch (error: any) {
+        console.error('Move error:', error);
+        this.error = error.response?.data?.message || 'Failed to make move';
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    }
   },
 }); 

@@ -41,18 +41,21 @@ const startNewGame = async () => {
 };
 
 const onSquareClicked = async ({ from, to, piece }: { from: { row: number, col: number }, to: { row: number, col: number }, piece: string }) => {
+  if (!gameStore.gameId) {
+    gameStore.error = 'No active game. Please start a new game.';
+    return;
+  }
+  
   if (from && to) {
-    // Convert array indices to chess notation (e.g., "e2")
     const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
     const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
     console.log('Move:', { from: fromSquare, to: toSquare, piece });
-    // Here you would call your move function from the game store
     await gameStore.makeMove(fromSquare, toSquare);
   }
 };
 
-onMounted(() => {
-  startNewGame();
+onMounted(async () => {
+  await startNewGame();
 });
 </script>
 

@@ -16,6 +16,7 @@ export class ChessController extends Controller {
     const userId = request.user.id;
     const game = await chessService.createGame(userId);
     return {
+      gameId: game.id,
       board: JSON.parse(game.board_state),
       currentTurn: game.current_turn,
       isCheck: false,
@@ -33,6 +34,7 @@ export class ChessController extends Controller {
     const userId = request.user.id;
     const game = await chessService.getGame(parseInt(gameId), userId);
     return {
+      gameId: game.id,
       board: JSON.parse(game.board_state),
       currentTurn: game.current_turn,
       isCheck: false,
