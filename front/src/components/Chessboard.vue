@@ -16,6 +16,10 @@
               :class="[
                 'square',
                 (rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark',
+                {
+                  'selected': selectedSquare?.row === rowIndex && selectedSquare?.col === colIndex,
+                  'highlighted': isHighlighted(rowIndex, colIndex)
+                }
               ]"
               @click="handleSquareClick(rowIndex, colIndex)"
             >
@@ -88,6 +92,21 @@
   background: #b58863;
 }
 
+.highlighted {
+  @apply relative;
+}
+
+.highlighted::before {
+  content: '';
+  @apply absolute w-3 h-3 bg-black/60 rounded-full;
+
+}
+
+.highlighted:hover::before {
+  @apply bg-black/80 scale-110;
+  transition: all 0.2s ease;
+}
+
 .piece-icon {
   @apply transform transition-transform duration-200 hover:scale-110 z-10;
 }
@@ -108,10 +127,13 @@
   right: 2px;
   opacity: 0.6;
 }
-</style>
 
+.selected {
+  @apply ring-4 ring-primary ring-opacity-50;
+}
+</style>
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps<{
   board: string[][]
@@ -119,8 +141,33 @@ const props = defineProps<{
 
 const emit = defineEmits(['square-clicked']);
 
+// Add state for selected piece
+const selectedSquare = ref<{ row: number; col: number } | null>(null);
+
+// Function to check if a square should be highlighted
+const isHighlighted = (rowIndex: number, colIndex: number) => {
+  if (!selectedSquare.value) return false;
+  // For now, highlight all empty squares as possible moves
+  return props.board[rowIndex][colIndex] === '';
+};
+
 const handleSquareClick = (rowIndex: number, colIndex: number) => {
-  emit('square-clicked', { row: rowIndex, col: colIndex, piece: props.board[rowIndex][colIndex] });
+  if (selectedSquare.value) {
+    // If a piece is already selected, try to move it
+    if (rowIndex !== selectedSquare.value.row || colIndex !== selectedSquare.value.col) {
+      emit('square-clicked', {
+        from: selectedSquare.value,
+        to: { row: rowIndex, col: colIndex },
+        piece: props.board[selectedSquare.value.row][selectedSquare.value.col]
+      });
+    }
+    selectedSquare.value = null;
+  } else {
+    // Select the piece if it's not empty
+    if (props.board[rowIndex][colIndex] !== '') {
+      selectedSquare.value = { row: rowIndex, col: colIndex };
+    }
+  }
 };
 
 // Function to get the Font Awesome class for each piece
