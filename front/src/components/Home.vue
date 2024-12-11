@@ -13,13 +13,6 @@
           New Game
         </button>
       </div>
-<<<<<<< HEAD
-      <div class="chessboard-wrapper">
-        <Chessboard 
-          :board="gameStore.board" 
-          @square-clicked="onSquareClicked" 
-        />
-=======
       <div v-if="gameStore.error" class="error-message">
         {{ gameStore.error }}
       </div>
@@ -33,7 +26,6 @@
         <div class="game-sidebar">
           <MoveHistory :moves="gameStore.moves" />
         </div>
->>>>>>> dev
       </div>
     </div>
   </div>
@@ -45,12 +37,9 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useGameStore } from '../stores/game';
 import Chessboard from './Chessboard.vue';
-<<<<<<< HEAD
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
-=======
 import MoveHistory from './MoveHistory.vue';
->>>>>>> dev
 
 const router = useRouter();
 const authStore = useAuthStore();
