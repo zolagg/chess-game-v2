@@ -27,10 +27,10 @@ export class ChessService {
   public async createGame(userId: number): Promise<ChessGame> {
     try {
       console.log("Starting createGame with userId:", userId);
-      
+
       const user = await User.findByPk(userId);
       console.log("Found user:", user?.id);
-      
+
       if (!user) {
         throw notFound("User");
       }
@@ -47,7 +47,7 @@ export class ChessService {
 
       const game = await ChessGame.create(gameData);
       console.log("Game created successfully:", game.id);
-      
+
       return game;
     } catch (error) {
       console.error("Error in createGame:", error);
@@ -203,6 +203,69 @@ export class ChessService {
         isCheckmate,
       },
     ]);
+
+    if (
+      piece.charAt(1) === "K" &&
+      Math.abs(toPosition[0] - fromPosition[0]) === 2
+    ) {
+      // C'est un roque
+      const isKingSide = toPosition[0] > fromPosition[0];
+      const rookFromX = isKingSide ? 7 : 0;
+      const rookToX = isKingSide ? toPosition[0] - 1 : toPosition[0] + 1;
+
+      // Vérifier si le roi est en échec
+      if (this.isKingInCheck(boardState, pieceColor)) {
+        throw new ChessError("Cannot castle while in check", 412);
+      }
+
+      // Vérifier si les cases traversées sont menacées
+      const traversedSquares = [
+        [fromPosition[0], fromPosition[1]],
+        [
+          isKingSide ? fromPosition[0] + 1 : fromPosition[0] - 1,
+          fromPosition[1],
+        ],
+        [toPosition[0], toPosition[1]],
+      ];
+
+      for (const [x, y] of traversedSquares) {
+        if (
+          this.isSquareAttacked(
+            [x, y],
+            boardState,
+            pieceColor === ChessColor.WHITE
+              ? ChessColor.BLACK
+              : ChessColor.WHITE
+          )
+        ) {
+          throw new ChessError("Cannot castle through or into check", 412);
+        }
+      }
+
+      // Déplacer le roi
+      boardState[toPosition[1]][toPosition[0]] = piece;
+      boardState[fromPosition[1]][fromPosition[0]] = "";
+
+      // Déplacer la tour
+      const rookPiece = boardState[fromPosition[1]][rookFromX];
+      boardState[fromPosition[1]][rookToX] = rookPiece;
+      boardState[fromPosition[1]][rookFromX] = "";
+
+      // Mettre à jour l'historique des mouvements avec le mouvement de la tour
+      const movesHistory = JSON.parse(game.moves_history);
+      movesHistory.push({
+        from: `${String.fromCharCode(97 + rookFromX)}${8 - fromPosition[1]}`,
+        to: `${String.fromCharCode(97 + rookToX)}${8 - fromPosition[1]}`,
+        piece: rookPiece,
+        timestamp: new Date(),
+        isCheck: false,
+        isCheckmate: false,
+      });
+      game.moves_history = JSON.stringify(movesHistory);
+
+      // Mettre à jour l'état du plateau
+      game.board_state = JSON.stringify(boardState);
+    }
 
     await game.save();
     return game;
@@ -508,13 +571,20 @@ export class ChessService {
 
               // Simuler le mouvement
               const tempBoard = JSON.parse(JSON.stringify(boardState));
-              const chessPiece = this.createPiece([fromCol, fromRow], color, piece[1]);
-              
-              if (chessPiece && chessPiece.canMoveTo([toCol, toRow], tempBoard)) {
+              const chessPiece = this.createPiece(
+                [fromCol, fromRow],
+                color,
+                piece[1]
+              );
+
+              if (
+                chessPiece &&
+                chessPiece.canMoveTo([toCol, toRow], tempBoard)
+              ) {
                 // Simuler le mouvement
                 tempBoard[toRow][toCol] = piece;
                 tempBoard[fromRow][fromCol] = "";
-                
+
                 // Si ce mouvement sort de l'échec, il y a encore des coups possibles
                 if (!this.isKingInCheck(tempBoard, color)) {
                   return true;
@@ -531,7 +601,7 @@ export class ChessService {
   public async getGameHistory(userId: number): Promise<ChessGame[]> {
     const games = await ChessGame.findAll({
       where: { user_id: userId },
-      order: [['createdAt', 'DESC']]
+      order: [["createdAt", "DESC"]],
     });
     return games;
   }
