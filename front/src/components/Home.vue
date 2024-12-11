@@ -23,21 +23,7 @@
       </div>
     </div>
     <div class="features-section">
-      <div class="feature-card">
-        <i class="fas fa-chess fa-2x mb-4"></i>
-        <h3>Classic Chess</h3>
-        <p>Play the traditional game with all standard rules</p>
-      </div>
-      <div class="feature-card">
-        <i class="fas fa-trophy fa-2x mb-4"></i>
-        <h3>Track Progress</h3>
-        <p>Monitor your games and improve your strategy</p>
-      </div>
-      <div class="feature-card">
-        <i class="fas fa-mobile-alt fa-2x mb-4"></i>
-        <h3>Responsive Design</h3>
-        <p>Play on any device, anywhere</p>
-      </div>
+      
     </div>
   </div>
 </template>
