@@ -29,6 +29,12 @@
           Loading chessboard...
         </div>
         <div class="game-sidebar">
+          <MoveNavigator 
+            :currentMoveIndex="currentMoveIndex"
+            :totalMoves="gameStore.moves.length"
+            :gameStatus="gameStatus"
+            @navigateToMove="handleMoveNavigation"
+          />
           <MoveHistory :moves="gameStore.moves" />
         </div>
       </div>
@@ -45,6 +51,7 @@ import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
 import MoveHistory from './MoveHistory.vue';
 import TurnIndicator from './TurnIndicator.vue';
+import MoveNavigator from './MoveNavigator.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -107,6 +114,9 @@ onMounted(async () => {
     console.log('Fetching game state...');
     const gameState = await gameStore.getGameState(gameId as string);
     console.log('Game state received:', gameState);
+    if (gameStore.isFinished) {
+      currentMoveIndex.value = gameStore.moves.length - 1;
+    }
   } catch (error: any) {
     console.error('Error fetching game state:', error);
     toast.add({
@@ -118,6 +128,19 @@ onMounted(async () => {
     router.push('/');
   }
 });
+
+const currentMoveIndex = ref(0);
+const gameStatus = computed(() => {
+  if (gameStore.status === 'RESIGNED') return 'RESIGNED';
+  if (gameStore.status === 'COMPLETED') return 'COMPLETED';
+  return 'IN_PROGRESS';
+});
+
+const handleMoveNavigation = (index: number) => {
+  currentMoveIndex.value = index;
+  const moveHistory = gameStore.moves.slice(0, index + 1);
+  gameStore.reconstructBoardState(moveHistory);
+};
 </script>
 
 <style lang="postcss" scoped>

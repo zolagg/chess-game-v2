@@ -20,6 +20,7 @@ interface GameState {
     createdAt: string;
     winner?: string;
   }>;
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'RESIGNED';
 }
 
 export const useGameStore = defineStore("game", {
@@ -37,6 +38,7 @@ export const useGameStore = defineStore("game", {
     isFinished: false,
     winnerColor: null,
     gameHistory: [],
+    status: 'IN_PROGRESS' as 'IN_PROGRESS' | 'COMPLETED' | 'RESIGNED',
   }),
 
   actions: {
@@ -151,6 +153,9 @@ export const useGameStore = defineStore("game", {
         this.isCheckmate = response.data.isCheckmate;
         this.moves = response.data.moves;
         this.gameId = response.data.gameId;
+        this.isFinished = response.data.status === 'COMPLETED' || response.data.status === 'RESIGNED';
+        this.winnerColor = response.data.winner_color || null;
+        this.status = response.data.status;
         return response.data;
       } catch (error: any) {
         console.error("Get game state error:", error);
@@ -197,6 +202,7 @@ export const useGameStore = defineStore("game", {
         if (response.data) {
           this.board = response.data.board;
           this.isFinished = true;
+          this.status = 'RESIGNED';
           // Assuming black wins when white resigns
           this.winnerColor = 'BLACK';
         }
@@ -213,6 +219,24 @@ export const useGameStore = defineStore("game", {
         throw new Error(errorMessage);
       } finally {
         this.loading = false;
+      }
+    },
+    async reconstructBoardState(moves: any[]) {
+      try {
+        if (!this.gameId) {
+          throw new Error("No active game");
+        }
+        
+        const response = await axios.post(`/chess/reconstruct/${this.gameId}`, {
+          moves
+        });
+        
+        if (response.data.board) {
+          this.board = response.data.board;
+        }
+      } catch (error: any) {
+        console.error("Error reconstructing board state:", error);
+        throw error;
       }
     }
   },
