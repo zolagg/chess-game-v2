@@ -14,6 +14,12 @@ interface GameState {
   error: string | null;
   isFinished: boolean;
   winnerColor: "WHITE" | "BLACK" | null;
+  gameHistory: Array<{
+    id: number;
+    status: 'IN_PROGRESS' | 'COMPLETED' | 'RESIGNED';
+    createdAt: string;
+    winner?: string;
+  }>;
 }
 
 export const useGameStore = defineStore("game", {
@@ -30,6 +36,7 @@ export const useGameStore = defineStore("game", {
     error: null,
     isFinished: false,
     winnerColor: null,
+    gameHistory: [],
   }),
 
   actions: {
@@ -157,5 +164,31 @@ export const useGameStore = defineStore("game", {
         this.loading = false;
       }
     },
+    async fetchGameHistory() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axios.get('/chess/games');
+        if (response.data) {
+          this.gameHistory = response.data.map((game: any) => ({
+            id: game.id,
+            status: game.status,
+            createdAt: game.createdAt,
+            winner: game.winner
+          }));
+        }
+        return this.gameHistory;
+      } catch (error: any) {
+        console.error('Error fetching game history:', error);
+        if (error.code === 'ERR_NETWORK') {
+          this.error = 'Unable to connect to the game server. Please check your connection.';
+        } else {
+          this.error = error.response?.data?.message || 'Failed to fetch game history';
+        }
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    }
   },
 });

@@ -91,6 +91,25 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ChessGameHistoryDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "gameId": {"dataType":"string","required":true},
+            "whitePlayerId": {"dataType":"double","required":true},
+            "blackPlayerId": {"dataType":"double","required":true},
+            "status": {"dataType":"union","subSchemas":[
+                {"dataType":"enum","enums":["IN_PROGRESS"]},
+                {"dataType":"enum","enums":["WHITE_WON"]},
+                {"dataType":"enum","enums":["BLACK_WON"]},
+                {"dataType":"enum","enums":["DRAW"]}
+            ],"required":true},
+            "moves": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "startTime": {"dataType":"datetime","required":true},
+            "endTime": {"dataType":"datetime"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
 const templateService = new ExpressTemplateService(models, {"noImplicitAdditionalProperties":"throw-on-extras","bodyCoercion":true});
 
@@ -542,6 +561,65 @@ export function RegisterRoutes(app: Router) {
     }
 
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+    app.get('/chess/history',
+        authenticateMiddleware([{"jwt":[]}]),
+        ...(fetchMiddlewares<RequestHandler>(ChessController)),
+        ...(fetchMiddlewares<RequestHandler>(ChessController.prototype.getGameHistory)),
+
+        async function ChessController_getGameHistory(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+                const controller = new ChessController();
+
+                await templateService.apiHandler({
+                    methodName: 'getGameHistory',
+                    controller,
+                    response,
+                    next,
+                    validatedArgs,
+                    successStatus: undefined,
+                });
+            } catch (err) {
+                return next(err);
+            }
+        }
+    );
+
+    app.get('/chess/history/:gameId',
+        authenticateMiddleware([{"jwt":[]}]),
+        ...(fetchMiddlewares<RequestHandler>(ChessController)),
+        ...(fetchMiddlewares<RequestHandler>(ChessController.prototype.getGameHistoryById)),
+
+        async function ChessController_getGameHistoryById(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                gameId: {"in":"path","name":"gameId","required":true,"dataType":"string"},
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+                const controller = new ChessController();
+
+                await templateService.apiHandler({
+                    methodName: 'getGameHistoryById',
+                    controller,
+                    response,
+                    next,
+                    validatedArgs,
+                    successStatus: undefined,
+                });
+            } catch (err) {
+                return next(err);
+            }
+        }
+    );
 }
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
