@@ -1,11 +1,12 @@
 import { ChessFigure, ChessColor } from "../ChessFigure";
 
 export class Rook extends ChessFigure {
+  private hasMoved: boolean = false;
+
   canMoveTo(targetPosition: [number, number], boardState: string[][]): boolean {
     if (!this.isValidPosition(targetPosition)) return false;
     if (!this.isStraightMove(targetPosition)) return false;
     
-    // Check if target square has our own piece
     const [toX, toY] = targetPosition;
     const targetPiece = boardState[toY][toX];
     if (targetPiece !== "") {
@@ -14,5 +15,13 @@ export class Rook extends ChessFigure {
     }
     
     return this.isPathClear(targetPosition, boardState);
+  }
+
+  setHasMoved(): void {
+    this.hasMoved = true;
+  }
+
+  getHasMoved(): boolean {
+    return this.hasMoved;
   }
 } 
