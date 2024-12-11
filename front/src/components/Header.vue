@@ -24,7 +24,6 @@ const navigateToHome = () => {
 
       <nav v-if="authStore.isAuthenticated" class="nav-links">
         <router-link to="/" class="nav-link">Home</router-link>
-        <router-link to="/chessboard" class="nav-link">Play</router-link>
       </nav>
 
       <div class="auth-actions">
