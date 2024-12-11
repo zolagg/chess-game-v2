@@ -67,7 +67,7 @@ export const useGameStore = defineStore("game", {
       }
     },
 
-    async makeMove(from: string, to: string) {
+    async makeMove(from: string, to: string, piece: string) {
       this.loading = true;
       this.error = null;
       try {
@@ -78,23 +78,22 @@ export const useGameStore = defineStore("game", {
         const response = await axios.post(`/chess/move/${this.gameId}`, {
           from,
           to,
+          piece
         });
 
         if (response.data.board) {
           this.board = response.data.board;
-
+          
+          // Update game state
+          if (response.data.currentTurn) {
+            this.currentTurn = response.data.currentTurn;
+          }
+          
           // Handle game over
           if (response.data.isFinished) {
             this.isFinished = true;
             this.winnerColor = response.data.winnerColor;
-
-            // Show game over message
             this.error = `Game Over - ${response.data.winnerColor} wins!`;
-
-            // Redirect to home after a short delay
-            setTimeout(() => {
-              router.push("/");
-            }, 2000);
           }
         }
 

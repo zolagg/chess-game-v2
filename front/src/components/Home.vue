@@ -50,7 +50,7 @@ const onSquareClicked = async ({ from, to, piece }: { from: { row: number, col: 
     const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
     const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
     console.log('Move:', { from: fromSquare, to: toSquare, piece });
-    await gameStore.makeMove(fromSquare, toSquare);
+    await gameStore.makeMove(fromSquare, toSquare, piece);
   }
 };
 
