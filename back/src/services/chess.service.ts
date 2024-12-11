@@ -141,19 +141,38 @@ export class ChessService {
     // Check if a king was captured
     await this.checkKingCapture(targetPiece, game);
 
-    // Make the move
+    // Simuler le mouvement sur une copie du plateau
+    const newBoardState = JSON.parse(JSON.stringify(boardState));
+    newBoardState[toPosition[1]][toPosition[0]] = piece;
+    newBoardState[fromPosition[1]][fromPosition[0]] = "";
+
+    // Vérifier si le mouvement met ou laisse notre roi en échec
+    if (this.isKingInCheck(newBoardState, pieceColor)) {
+      throw new ChessError("This move would put or leave your king in check", 412);
+    }
+
+    // Si tout est valide, effectuer le mouvement réel
     boardState[toPosition[1]][toPosition[0]] = piece;
     boardState[fromPosition[1]][fromPosition[0]] = "";
 
-    // Update game state
-    game.current_turn =
-      game.current_turn === ChessColor.WHITE
-        ? ChessColor.BLACK
-        : ChessColor.WHITE;
+    // Vérifier si le roi adverse est en échec
+    const isCheck = this.isKingInCheck(
+      boardState,
+      pieceColor === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE
+    );
+
+    // Mettre à jour l'état du jeu
+    game.current_turn = game.current_turn === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE;
     game.board_state = JSON.stringify(boardState);
     game.moves_history = JSON.stringify([
       ...movesHistory,
-      { from, to, piece, timestamp: new Date() },
+      { 
+        from, 
+        to, 
+        piece, 
+        timestamp: new Date(),
+        isCheck 
+      },
     ]);
 
     await game.save();
@@ -293,6 +312,49 @@ export class ChessService {
       console.error('Error in getPossibleMoves:', error);
       throw error;
     }
+  }
+
+  private isKingInCheck(boardState: string[][], color: ChessColor): boolean {
+    // Parcourir toutes les pièces adverses
+    const opponentPrefix = color === ChessColor.WHITE ? "B" : "W";
+    
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = boardState[row][col];
+        if (piece && piece.startsWith(opponentPrefix)) {
+          let chessPiece: ChessFigure;
+          
+          switch (piece.charAt(1)) {
+            case "P":
+              chessPiece = new Pawn([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              break;
+            case "R":
+              chessPiece = new Rook([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              break;
+            case "N":
+              chessPiece = new Knight([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              break;
+            case "B":
+              chessPiece = new Bishop([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              break;
+            case "Q":
+              chessPiece = new Queen([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              break;
+            case "K":
+              chessPiece = new King([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              break;
+            default:
+              continue;
+          }
+          
+          if (chessPiece.isThreateningKing(boardState)) {
+            return true;
+          }
+        }
+      }
+    }
+    
+    return false;
   }
 }
 
