@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Path, Post, Route, Tags, Security, Request } from "tsoa";
+import {
+  Body,
+  Controller,
+  Get,
+  Path,
+  Post,
+  Route,
+  Tags,
+  Security,
+  Request,
+} from "tsoa";
 import {
   ChessMoveInputDTO,
   ChessMoveOutputDTO,
@@ -12,7 +22,9 @@ import { chessService } from "../services/chess.service";
 export class ChessController extends Controller {
   // Démarrer une nouvelle partie
   @Post("/new-game")
-  public async startNewGame(@Request() request: any): Promise<ChessGameStateDTO> {
+  public async startNewGame(
+    @Request() request: any
+  ): Promise<ChessGameStateDTO> {
     const userId = request.user.id;
     const game = await chessService.createGame(userId);
     return {
@@ -57,15 +69,21 @@ export class ChessController extends Controller {
       move.from,
       move.to
     );
+    const moves = JSON.parse(game.moves_history);
+    const lastMove = moves[moves.length - 1];
 
     return {
       success: true,
-      message: game.is_finished ? `Game Over - ${game.winner_color} wins!` : "Move successful",
+      message: lastMove.isCheckmate
+        ? `Checkmate! ${game.winner_color} wins!`
+        : lastMove.isCheck
+          ? "Check!"
+          : "Move successful",
       board: JSON.parse(game.board_state),
-      isCheck: false,
-      isCheckmate: false,
+      isCheck: lastMove.isCheck,
+      isCheckmate: lastMove.isCheckmate,
       isFinished: game.is_finished,
-      winnerColor: game.winner_color
+      winnerColor: game.winner_color,
     };
   }
 
@@ -77,17 +95,21 @@ export class ChessController extends Controller {
     @Request() request: any
   ): Promise<string[]> {
     try {
-      console.log('Controller - getPossibleMoves called with:', { gameId, position, userId: request.user.id });
+      console.log("Controller - getPossibleMoves called with:", {
+        gameId,
+        position,
+        userId: request.user.id,
+      });
       const userId = request.user.id;
       const moves = await chessService.getPossibleMoves(
         parseInt(gameId),
         userId,
         position
       );
-      console.log('Controller - moves returned:', moves);
+      console.log("Controller - moves returned:", moves);
       return moves;
     } catch (error) {
-      console.error('Controller - Error in getPossibleMoves:', error);
+      console.error("Controller - Error in getPossibleMoves:", error);
       throw error;
     }
   }
@@ -99,10 +121,7 @@ export class ChessController extends Controller {
     @Request() request: any
   ): Promise<ChessMoveOutputDTO> {
     const userId = request.user.id;
-    const game = await chessService.resignGame(
-      parseInt(gameId),
-      userId
-    );
+    const game = await chessService.resignGame(parseInt(gameId), userId);
 
     return {
       success: true,

@@ -97,7 +97,10 @@ export class ChessService {
       ? ChessColor.WHITE
       : ChessColor.BLACK;
     if (pieceColor !== game.current_turn) {
-      throw new ChessError(`Not your turn - Current turn is ${game.current_turn}`, 412);
+      throw new ChessError(
+        `Not your turn - Current turn is ${game.current_turn}`,
+        412
+      );
     }
 
     // Create the appropriate chess piece instance
@@ -146,32 +149,42 @@ export class ChessService {
     newBoardState[toPosition[1]][toPosition[0]] = piece;
     newBoardState[fromPosition[1]][fromPosition[0]] = "";
 
-    // Vérifier si le mouvement met ou laisse notre roi en échec
+    // Vérifier si le mouvement laisse notre roi en échec
     if (this.isKingInCheck(newBoardState, pieceColor)) {
-      throw new ChessError("This move would put or leave your king in check", 412);
+      throw new ChessError("This move would leave your king in check", 412);
     }
 
-    // Si tout est valide, effectuer le mouvement réel
+    // Effectuer le mouvement réel
     boardState[toPosition[1]][toPosition[0]] = piece;
     boardState[fromPosition[1]][fromPosition[0]] = "";
 
-    // Vérifier si le roi adverse est en échec
-    const isCheck = this.isKingInCheck(
-      boardState,
-      pieceColor === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE
-    );
+    // Vérifier l'échec et l'échec et mat pour l'adversaire
+    const opponentColor =
+      pieceColor === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE;
+    const isCheck = this.isKingInCheck(boardState, opponentColor);
+    const isCheckmate =
+      isCheck && !this.canAnyPieceMove(boardState, opponentColor);
 
     // Mettre à jour l'état du jeu
-    game.current_turn = game.current_turn === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE;
+    game.current_turn = opponentColor;
     game.board_state = JSON.stringify(boardState);
+
+    // Important : mettre à jour is_finished et winner_color en cas d'échec et mat
+    if (isCheckmate) {
+      game.is_finished = true;
+      game.winner_color = pieceColor;
+    }
+
+    // Stocker l'information d'échec et mat dans l'historique
     game.moves_history = JSON.stringify([
       ...movesHistory,
-      { 
-        from, 
-        to, 
-        piece, 
+      {
+        from,
+        to,
+        piece,
         timestamp: new Date(),
-        isCheck 
+        isCheck,
+        isCheckmate,
       },
     ]);
 
@@ -224,11 +237,15 @@ export class ChessService {
     return game;
   }
 
-  public async checkKingCapture(targetPiece: string, game: ChessGame): Promise<void> {
+  public async checkKingCapture(
+    targetPiece: string,
+    game: ChessGame
+  ): Promise<void> {
     if (targetPiece === "WK" || targetPiece === "BK") {
       game.is_finished = true;
       // Set winner to opposite color of the captured king
-      game.winner_color = targetPiece[0] === "W" ? ChessColor.BLACK : ChessColor.WHITE;
+      game.winner_color =
+        targetPiece[0] === "W" ? ChessColor.BLACK : ChessColor.WHITE;
       await game.save();
     }
   }
@@ -239,34 +256,37 @@ export class ChessService {
     position: string
   ): Promise<string[]> {
     try {
-      console.log('getPossibleMoves - Input:', { gameId, userId, position });
-      
+      console.log("getPossibleMoves - Input:", { gameId, userId, position });
+
       const game = await this.getGame(gameId, userId);
-      console.log('Game found:', { gameId: game.id, currentTurn: game.current_turn });
+      console.log("Game found:", {
+        gameId: game.id,
+        currentTurn: game.current_turn,
+      });
 
       const boardState = JSON.parse(game.board_state);
-      console.log('Board state parsed successfully');
+      console.log("Board state parsed successfully");
 
       // Convert chess notation to array indices
       const [file, rank] = position.split("");
-      console.log('Position parsed:', { file, rank });
+      console.log("Position parsed:", { file, rank });
 
       const col = file.charCodeAt(0) - 97;
       const row = 8 - parseInt(rank);
-      console.log('Converted to indices:', { col, row });
+      console.log("Converted to indices:", { col, row });
 
       // Get the piece at the position
       const piece = boardState[row][col];
-      console.log('Piece at position:', piece);
+      console.log("Piece at position:", piece);
 
       if (!piece) {
-        console.log('No piece found at position');
+        console.log("No piece found at position");
         return [];
       }
 
       // Create the appropriate chess piece instance
       const color = piece.startsWith("W") ? ChessColor.WHITE : ChessColor.BLACK;
-      console.log('Piece color:', color);
+      console.log("Piece color:", color);
 
       let chessPiece: ChessFigure;
       try {
@@ -290,26 +310,26 @@ export class ChessService {
             chessPiece = new King([col, row], color);
             break;
           default:
-            console.log('Invalid piece type:', piece.charAt(1));
+            console.log("Invalid piece type:", piece.charAt(1));
             return [];
         }
-        console.log('Chess piece instance created:', piece.charAt(1));
+        console.log("Chess piece instance created:", piece.charAt(1));
 
         const possibleMoves = chessPiece.getPossibleMoves(boardState);
-        console.log('Possible moves calculated:', possibleMoves);
+        console.log("Possible moves calculated:", possibleMoves);
 
-        const notation = possibleMoves.map(([col, row]) => 
-          `${String.fromCharCode(97 + col)}${8 - row}`
+        const notation = possibleMoves.map(
+          ([col, row]) => `${String.fromCharCode(97 + col)}${8 - row}`
         );
-        console.log('Moves converted to notation:', notation);
+        console.log("Moves converted to notation:", notation);
 
         return notation;
       } catch (error) {
-        console.error('Error in chess piece operations:', error);
+        console.error("Error in chess piece operations:", error);
         throw error;
       }
     } catch (error) {
-      console.error('Error in getPossibleMoves:', error);
+      console.error("Error in getPossibleMoves:", error);
       throw error;
     }
   }
@@ -317,43 +337,177 @@ export class ChessService {
   private isKingInCheck(boardState: string[][], color: ChessColor): boolean {
     // Parcourir toutes les pièces adverses
     const opponentPrefix = color === ChessColor.WHITE ? "B" : "W";
-    
+
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const piece = boardState[row][col];
         if (piece && piece.startsWith(opponentPrefix)) {
           let chessPiece: ChessFigure;
-          
+
           switch (piece.charAt(1)) {
             case "P":
-              chessPiece = new Pawn([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              chessPiece = new Pawn(
+                [col, row],
+                color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE
+              );
               break;
             case "R":
-              chessPiece = new Rook([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              chessPiece = new Rook(
+                [col, row],
+                color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE
+              );
               break;
             case "N":
-              chessPiece = new Knight([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              chessPiece = new Knight(
+                [col, row],
+                color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE
+              );
               break;
             case "B":
-              chessPiece = new Bishop([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              chessPiece = new Bishop(
+                [col, row],
+                color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE
+              );
               break;
             case "Q":
-              chessPiece = new Queen([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              chessPiece = new Queen(
+                [col, row],
+                color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE
+              );
               break;
             case "K":
-              chessPiece = new King([col, row], color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE);
+              chessPiece = new King(
+                [col, row],
+                color === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE
+              );
               break;
             default:
               continue;
           }
-          
+
           if (chessPiece.isThreateningKing(boardState)) {
             return true;
           }
         }
       }
     }
-    
+
+    return false;
+  }
+
+  private isSquareAttacked(
+    position: [number, number],
+    boardState: string[][],
+    attackingColor: ChessColor
+  ): boolean {
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = boardState[row][col];
+        if (
+          piece &&
+          piece[0] === (attackingColor === ChessColor.WHITE ? "W" : "B")
+        ) {
+          const attacker = this.createPiece(
+            [col, row],
+            attackingColor,
+            piece[1]
+          );
+          if (attacker && attacker.canMoveTo(position, boardState)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  private createPiece(
+    position: [number, number],
+    color: ChessColor,
+    type: string
+  ): ChessFigure | null {
+    switch (type) {
+      case "P":
+        return new Pawn(position, color);
+      case "R":
+        return new Rook(position, color);
+      case "N":
+        return new Knight(position, color);
+      case "B":
+        return new Bishop(position, color);
+      case "Q":
+        return new Queen(position, color);
+      case "K":
+        return new King(position, color);
+      default:
+        return null;
+    }
+  }
+
+  private isCheckmate(boardState: string[][], color: ChessColor): boolean {
+    // Si le roi n'est pas en échec, ce n'est pas un échec et mat
+    if (!this.isKingInCheck(boardState, color)) {
+      return false;
+    }
+
+    // Pour chaque pièce de notre couleur
+    const prefix = color === ChessColor.WHITE ? "W" : "B";
+    for (let fromRow = 0; fromRow < 8; fromRow++) {
+      for (let fromCol = 0; fromCol < 8; fromCol++) {
+        const piece = boardState[fromRow][fromCol];
+        if (piece && piece.startsWith(prefix)) {
+          // Pour chaque case possible
+          for (let toRow = 0; toRow < 8; toRow++) {
+            for (let toCol = 0; toCol < 8; toCol++) {
+              // Simuler le mouvement
+              const tempBoard = JSON.parse(JSON.stringify(boardState));
+              const tempPiece = tempBoard[fromRow][fromCol];
+              tempBoard[toRow][toCol] = tempPiece;
+              tempBoard[fromRow][fromCol] = "";
+
+              // Si ce mouvement sort de l'échec, ce n'est pas un échec et mat
+              if (!this.isKingInCheck(tempBoard, color)) {
+                return false;
+              }
+            }
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  private canAnyPieceMove(boardState: string[][], color: ChessColor): boolean {
+    // Pour chaque pièce de la couleur donnée
+    for (let fromRow = 0; fromRow < 8; fromRow++) {
+      for (let fromCol = 0; fromCol < 8; fromCol++) {
+        const piece = boardState[fromRow][fromCol];
+        if (piece && piece[0] === (color === ChessColor.WHITE ? "W" : "B")) {
+          // Pour chaque case possible sur le plateau
+          for (let toRow = 0; toRow < 8; toRow++) {
+            for (let toCol = 0; toCol < 8; toCol++) {
+              // Éviter de vérifier la même position
+              if (fromRow === toRow && fromCol === toCol) continue;
+
+              // Simuler le mouvement
+              const tempBoard = JSON.parse(JSON.stringify(boardState));
+              const chessPiece = this.createPiece([fromCol, fromRow], color, piece[1]);
+              
+              if (chessPiece && chessPiece.canMoveTo([toCol, toRow], tempBoard)) {
+                // Simuler le mouvement
+                tempBoard[toRow][toCol] = piece;
+                tempBoard[fromRow][fromCol] = "";
+                
+                // Si ce mouvement sort de l'échec, il y a encore des coups possibles
+                if (!this.isKingInCheck(tempBoard, color)) {
+                  return true;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     return false;
   }
 }
