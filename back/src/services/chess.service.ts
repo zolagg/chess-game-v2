@@ -8,6 +8,7 @@ import { Bishop } from "../chess/pieces/Bishop";
 import { Queen } from "../chess/pieces/Queen";
 import { King } from "../chess/pieces/King";
 import { ChessError } from "../error/ChessError";
+import { ChessFigure } from "../chess/ChessFigure";
 
 export class ChessService {
   private readonly INITIAL_BOARD_STATE = [
@@ -210,6 +211,87 @@ export class ChessService {
       // Set winner to opposite color of the captured king
       game.winner_color = targetPiece[0] === "W" ? ChessColor.BLACK : ChessColor.WHITE;
       await game.save();
+    }
+  }
+
+  public async getPossibleMoves(
+    gameId: number,
+    userId: number,
+    position: string
+  ): Promise<string[]> {
+    try {
+      console.log('getPossibleMoves - Input:', { gameId, userId, position });
+      
+      const game = await this.getGame(gameId, userId);
+      console.log('Game found:', { gameId: game.id, currentTurn: game.current_turn });
+
+      const boardState = JSON.parse(game.board_state);
+      console.log('Board state parsed successfully');
+
+      // Convert chess notation to array indices
+      const [file, rank] = position.split("");
+      console.log('Position parsed:', { file, rank });
+
+      const col = file.charCodeAt(0) - 97;
+      const row = 8 - parseInt(rank);
+      console.log('Converted to indices:', { col, row });
+
+      // Get the piece at the position
+      const piece = boardState[row][col];
+      console.log('Piece at position:', piece);
+
+      if (!piece) {
+        console.log('No piece found at position');
+        return [];
+      }
+
+      // Create the appropriate chess piece instance
+      const color = piece.startsWith("W") ? ChessColor.WHITE : ChessColor.BLACK;
+      console.log('Piece color:', color);
+
+      let chessPiece: ChessFigure;
+      try {
+        switch (piece.charAt(1)) {
+          case "P":
+            chessPiece = new Pawn([col, row], color);
+            break;
+          case "R":
+            chessPiece = new Rook([col, row], color);
+            break;
+          case "N":
+            chessPiece = new Knight([col, row], color);
+            break;
+          case "B":
+            chessPiece = new Bishop([col, row], color);
+            break;
+          case "Q":
+            chessPiece = new Queen([col, row], color);
+            break;
+          case "K":
+            chessPiece = new King([col, row], color);
+            break;
+          default:
+            console.log('Invalid piece type:', piece.charAt(1));
+            return [];
+        }
+        console.log('Chess piece instance created:', piece.charAt(1));
+
+        const possibleMoves = chessPiece.getPossibleMoves(boardState);
+        console.log('Possible moves calculated:', possibleMoves);
+
+        const notation = possibleMoves.map(([col, row]) => 
+          `${String.fromCharCode(97 + col)}${8 - row}`
+        );
+        console.log('Moves converted to notation:', notation);
+
+        return notation;
+      } catch (error) {
+        console.error('Error in chess piece operations:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in getPossibleMoves:', error);
+      throw error;
     }
   }
 }

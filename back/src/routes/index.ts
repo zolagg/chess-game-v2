@@ -363,30 +363,45 @@ export function RegisterRoutes(app: Router) {
             ...(fetchMiddlewares<RequestHandler>(ChessController)),
             ...(fetchMiddlewares<RequestHandler>(ChessController.prototype.getPossibleMoves)),
 
-            async function ChessController_getPossibleMoves(request: ExRequest, response: ExResponse, next: any) {
+            async function ChessController_getPossibleMoves(request: ExRequest & { user?: any }, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    gameId: {"in":"path","name":"gameId","required":true,"dataType":"string"},
-                    position: {"in":"path","name":"position","required":true,"dataType":"string"},
+                gameId: {"in":"path","name":"gameId","required":true,"dataType":"string"},
+                position: {"in":"path","name":"position","required":true,"dataType":"string"},
+                request: {"in":"request","name":"request","required":true,"dataType":"object"}
             };
 
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
             try {
+                if (!request.user) {
+                    response.status(401).json({ 
+                        message: 'Unauthorized - User not authenticated'
+                    });
+                    return;
+                }
+
+                console.log('Route handler - getPossibleMoves called with:', { 
+                    gameId: request.params.gameId, 
+                    position: request.params.position,
+                    userId: request.user.id 
+                });
+
+                let validatedArgs: any[] = [];
                 validatedArgs = templateService.getValidatedArgs({ args, request, response });
 
                 const controller = new ChessController();
-
-              await templateService.apiHandler({
-                methodName: 'getPossibleMoves',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
+                await templateService.apiHandler({
+                    methodName: 'getPossibleMoves',
+                    controller,
+                    response,
+                    next,
+                    validatedArgs,
+                    successStatus: undefined,
+                });
             } catch (err) {
-                return next(err);
+                console.error('Route handler - Error:', err);
+                response.status(500).json({ 
+                    message: 'Internal server error', 
+                    error: err instanceof Error ? err.message : String(err) 
+                });
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -73,10 +73,23 @@ export class ChessController extends Controller {
   @Get("/possible-moves/{gameId}/{position}")
   public async getPossibleMoves(
     @Path() gameId: string,
-    @Path() position: string
+    @Path() position: string,
+    @Request() request: any
   ): Promise<string[]> {
-    // TODO: Implement this in chess service
-    return [];
+    try {
+      console.log('Controller - getPossibleMoves called with:', { gameId, position, userId: request.user.id });
+      const userId = request.user.id;
+      const moves = await chessService.getPossibleMoves(
+        parseInt(gameId),
+        userId,
+        position
+      );
+      console.log('Controller - moves returned:', moves);
+      return moves;
+    } catch (error) {
+      console.error('Controller - Error in getPossibleMoves:', error);
+      throw error;
+    }
   }
 
   // Abandonner la partie

@@ -11,6 +11,33 @@ export abstract class ChessFigure {
 
   abstract canMoveTo(targetPosition: [number, number], boardState: string[][]): boolean;
 
+  getPossibleMoves(boardState: string[][]): [number, number][] {
+    const possibleMoves: [number, number][] = [];
+    
+    // Check all possible squares on the board
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const targetPosition: [number, number] = [col, row];
+        
+        // Skip if the target position is the same as current position
+        if (col === this.position[0] && row === this.position[1]) {
+          continue;
+        }
+        
+        // Check if the move is valid according to piece rules
+        if (this.canMoveTo(targetPosition, boardState)) {
+          // Check if target square has a piece of the same color
+          const targetPiece = boardState[row][col];
+          if (!targetPiece || targetPiece[0] !== (this.color === ChessColor.WHITE ? "W" : "B")) {
+            possibleMoves.push(targetPosition);
+          }
+        }
+      }
+    }
+    
+    return possibleMoves;
+  }
+
   protected isValidPosition(position: [number, number]): boolean {
     const [x, y] = position;
     return x >= 0 && x < 8 && y >= 0 && y < 8;

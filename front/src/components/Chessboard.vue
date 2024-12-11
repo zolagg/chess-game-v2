@@ -134,45 +134,73 @@
 }
 </style>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { useGameStore } from '../stores/game';
 
 const props = defineProps<{
   board: string[][];
 }>();
 
 const emit = defineEmits(["square-clicked"]);
+const gameStore = useGameStore();
 
-// Add state for selected piece
+// Add state for possible moves
+const possibleMoves = ref<string[]>([]);
 const selectedSquare = ref<{ row: number; col: number } | null>(null);
 
-// Function to check if a square should be highlighted
-const isHighlighted = (rowIndex: number, colIndex: number) => {
-  if (!selectedSquare.value) return false;
-  // For now, highlight all empty squares as possible moves
-  return props.board[rowIndex][colIndex] === "";
+// Function to convert board position to algebraic notation
+const toAlgebraicNotation = (row: number, col: number): string => {
+  return `${String.fromCharCode(97 + col)}${8 - row}`;
 };
 
-const handleSquareClick = (rowIndex: number, colIndex: number) => {
+// Function to convert algebraic notation to board position
+const fromAlgebraicNotation = (position: string): { row: number; col: number } => {
+  const col = position.charCodeAt(0) - 97;
+  const row = 8 - parseInt(position[1]);
+  return { row, col };
+};
+
+// Update isHighlighted function to use possible moves
+const isHighlighted = (rowIndex: number, colIndex: number) => {
+  if (!selectedSquare.value) return false;
+  const position = toAlgebraicNotation(rowIndex, colIndex);
+  return possibleMoves.value.includes(position);
+};
+
+// Update handleSquareClick to fetch possible moves
+const handleSquareClick = async (rowIndex: number, colIndex: number) => {
   if (selectedSquare.value) {
     // If a piece is already selected, try to move it
     if (
       rowIndex !== selectedSquare.value.row ||
       colIndex !== selectedSquare.value.col
     ) {
-      emit("square-clicked", {
-        from: selectedSquare.value,
-        to: { row: rowIndex, col: colIndex },
-        piece: props.board[selectedSquare.value.row][selectedSquare.value.col],
-      });
+      const position = toAlgebraicNotation(rowIndex, colIndex);
+      if (possibleMoves.value.includes(position)) {
+        emit("square-clicked", {
+          from: selectedSquare.value,
+          to: { row: rowIndex, col: colIndex },
+          piece: props.board[selectedSquare.value.row][selectedSquare.value.col],
+        });
+      }
     }
     selectedSquare.value = null;
+    possibleMoves.value = [];
   } else {
-    // Select the piece if it's not empty
+    // Select the piece if it's not empty and get possible moves
     if (props.board[rowIndex][colIndex] !== "") {
       selectedSquare.value = { row: rowIndex, col: colIndex };
+      const position = toAlgebraicNotation(rowIndex, colIndex);
+      possibleMoves.value = await gameStore.getPossibleMoves(position);
     }
   }
 };
+
+// Clear possible moves when board changes
+watch(() => props.board, () => {
+  selectedSquare.value = null;
+  possibleMoves.value = [];
+});
 
 // Function to get the Font Awesome class for each piece
 const getPieceIcon = (piece: string) => {
