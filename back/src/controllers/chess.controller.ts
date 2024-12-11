@@ -14,19 +14,26 @@ import {
   ChessMoveOutputDTO,
   ChessGameStateDTO,
 } from "../dto/chess.dto";
-import { chessService } from "../services/chess.service";
+import { ChessService } from "../services/chess.service";
 
 @Route("chess")
 @Tags("Chess")
 @Security("jwt")
 export class ChessController extends Controller {
+  private chessService: ChessService;
+
+  constructor() {
+    super();
+    this.chessService = new ChessService();
+  }
+
   // Démarrer une nouvelle partie
   @Post("/new-game")
   public async startNewGame(
     @Request() request: any
   ): Promise<ChessGameStateDTO> {
     const userId = request.user.id;
-    const game = await chessService.createGame(userId);
+    const game = await this.chessService.createGame(userId);
     return {
       gameId: game.id,
       board: JSON.parse(game.board_state),
@@ -44,7 +51,7 @@ export class ChessController extends Controller {
     @Request() request: any
   ): Promise<ChessGameStateDTO> {
     const userId = request.user.id;
-    const game = await chessService.getGame(parseInt(gameId), userId);
+    const game = await this.chessService.getGame(parseInt(gameId), userId);
     return {
       gameId: game.id,
       board: JSON.parse(game.board_state),
@@ -63,7 +70,7 @@ export class ChessController extends Controller {
     @Request() request: any
   ): Promise<ChessMoveOutputDTO> {
     const userId = request.user.id;
-    const game = await chessService.makeMove(
+    const game = await this.chessService.makeMove(
       parseInt(gameId),
       userId,
       move.from,
@@ -101,7 +108,7 @@ export class ChessController extends Controller {
         userId: request.user.id,
       });
       const userId = request.user.id;
-      const moves = await chessService.getPossibleMoves(
+      const moves = await this.chessService.getPossibleMoves(
         parseInt(gameId),
         userId,
         position
@@ -121,7 +128,7 @@ export class ChessController extends Controller {
     @Request() request: any
   ): Promise<ChessMoveOutputDTO> {
     const userId = request.user.id;
-    const game = await chessService.resignGame(parseInt(gameId), userId);
+    const game = await this.chessService.resignGame(parseInt(gameId), userId);
 
     return {
       success: true,
@@ -129,6 +136,36 @@ export class ChessController extends Controller {
       board: JSON.parse(game.board_state),
       isCheck: false,
       isCheckmate: false,
+    };
+  }
+
+  @Get("/history")
+  public async getGameHistory(
+    @Request() request: any
+  ): Promise<any[]> {
+    const userId = request.user.id;
+    const games = await this.chessService.getGameHistory(userId);
+    return games.map(game => ({
+      id: game.id,
+      status: game.is_finished ? 'COMPLETED' : 'IN_PROGRESS',
+      createdAt: game.createdAt,
+      winner: game.winner_color
+    }));
+  }
+
+  @Get("/history/{gameId}")
+  public async getGameHistoryById(
+    @Path() gameId: string,
+    @Request() request: any
+  ): Promise<any> {
+    const userId = request.user.id;
+    const game = await this.chessService.getGame(parseInt(gameId), userId);
+    return {
+      id: game.id,
+      status: game.is_finished ? 'COMPLETED' : 'IN_PROGRESS',
+      createdAt: game.createdAt,
+      winner: game.winner_color,
+      moves: JSON.parse(game.moves_history)
     };
   }
 }

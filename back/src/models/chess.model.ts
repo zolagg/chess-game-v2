@@ -37,6 +37,8 @@ export class ChessGame
   public moves_history!: string;
   public is_finished!: boolean;
   public winner_color?: ChessColor;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 ChessGame.init(
@@ -80,7 +82,9 @@ ChessGame.init(
   },
   {
     sequelize,
+    modelName: "ChessGame",
     tableName: "ChessGame",
+    timestamps: true,
   }
 );
 

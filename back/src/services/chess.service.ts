@@ -25,19 +25,33 @@ export class ChessService {
   ];
 
   public async createGame(userId: number): Promise<ChessGame> {
-    const user = await User.findByPk(userId);
-    if (!user) {
-      throw notFound("User");
-    }
-    console.log("userId", userId);
+    try {
+      console.log("Starting createGame with userId:", userId);
+      
+      const user = await User.findByPk(userId);
+      console.log("Found user:", user?.id);
+      
+      if (!user) {
+        throw notFound("User");
+      }
 
-    return ChessGame.create({
-      user_id: userId,
-      current_turn: ChessColor.WHITE,
-      board_state: JSON.stringify(this.INITIAL_BOARD_STATE),
-      moves_history: "[]",
-      is_finished: false,
-    });
+      const gameData = {
+        user_id: userId,
+        current_turn: ChessColor.WHITE,
+        board_state: JSON.stringify(this.INITIAL_BOARD_STATE),
+        moves_history: "[]",
+        is_finished: false
+      };
+      console.log("Creating game with data:", gameData);
+
+      const game = await ChessGame.create(gameData);
+      console.log("Game created successfully:", game.id);
+      
+      return game;
+    } catch (error) {
+      console.error("Error in createGame:", error);
+      throw error;
+    }
   }
 
   public async getGame(gameId: number, userId: number): Promise<ChessGame> {
@@ -509,6 +523,14 @@ export class ChessService {
       }
     }
     return false;
+  }
+
+  public async getGameHistory(userId: number): Promise<ChessGame[]> {
+    const games = await ChessGame.findAll({
+      where: { user_id: userId },
+      order: [['createdAt', 'DESC']]
+    });
+    return games;
   }
 }
 

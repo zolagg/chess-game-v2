@@ -32,6 +32,21 @@ RegisterRoutes(app);
 
 app.use(errorHandler);
 
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error details:', {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+    details: err.details || 'No additional details'
+  });
+
+  // Send appropriate error response
+  res.status(err.status || 500).json({
+    message: err.message,
+    details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
 app.listen(PORT, () => {
   console.log("Server is running on port", PORT);
 });

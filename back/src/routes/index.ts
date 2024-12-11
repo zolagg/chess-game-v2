@@ -50,6 +50,7 @@ const models: TsoaRoute.Models = {
     "ChessGameStateDTO": {
         "dataType": "refObject",
         "properties": {
+            "gameId": {"dataType":"double","required":true},
             "board": {"dataType":"array","array":{"dataType":"array","array":{"dataType":"string"}},"required":true},
             "currentTurn": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["WHITE"]},{"dataType":"enum","enums":["BLACK"]}],"required":true},
             "isCheck": {"dataType":"boolean","required":true},
@@ -65,8 +66,10 @@ const models: TsoaRoute.Models = {
             "success": {"dataType":"boolean","required":true},
             "message": {"dataType":"string","required":true},
             "board": {"dataType":"array","array":{"dataType":"array","array":{"dataType":"string"}}},
-            "isCheck": {"dataType":"boolean"},
-            "isCheckmate": {"dataType":"boolean"},
+            "isCheck": {"dataType":"boolean","required":true},
+            "isCheckmate": {"dataType":"boolean","required":true},
+            "isFinished": {"dataType":"boolean"},
+            "winnerColor": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["WHITE"]},{"dataType":"enum","enums":["BLACK"]}]},
         },
         "additionalProperties": false,
     },
@@ -87,25 +90,6 @@ const models: TsoaRoute.Models = {
             "grant_type": {"dataType":"string","required":true},
             "username": {"dataType":"string","required":true},
             "password": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ChessGameHistoryDTO": {
-        "dataType": "refObject",
-        "properties": {
-            "gameId": {"dataType":"string","required":true},
-            "whitePlayerId": {"dataType":"double","required":true},
-            "blackPlayerId": {"dataType":"double","required":true},
-            "status": {"dataType":"union","subSchemas":[
-                {"dataType":"enum","enums":["IN_PROGRESS"]},
-                {"dataType":"enum","enums":["WHITE_WON"]},
-                {"dataType":"enum","enums":["BLACK_WON"]},
-                {"dataType":"enum","enums":["DRAW"]}
-            ],"required":true},
-            "moves": {"dataType":"array","array":{"dataType":"string"},"required":true},
-            "startTime": {"dataType":"datetime","required":true},
-            "endTime": {"dataType":"datetime"},
         },
         "additionalProperties": false,
     },
@@ -382,45 +366,31 @@ export function RegisterRoutes(app: Router) {
             ...(fetchMiddlewares<RequestHandler>(ChessController)),
             ...(fetchMiddlewares<RequestHandler>(ChessController.prototype.getPossibleMoves)),
 
-            async function ChessController_getPossibleMoves(request: ExRequest & { user?: any }, response: ExResponse, next: any) {
+            async function ChessController_getPossibleMoves(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
-                gameId: {"in":"path","name":"gameId","required":true,"dataType":"string"},
-                position: {"in":"path","name":"position","required":true,"dataType":"string"},
-                request: {"in":"request","name":"request","required":true,"dataType":"object"}
+                    gameId: {"in":"path","name":"gameId","required":true,"dataType":"string"},
+                    position: {"in":"path","name":"position","required":true,"dataType":"string"},
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
             };
 
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
             try {
-                if (!request.user) {
-                    response.status(401).json({ 
-                        message: 'Unauthorized - User not authenticated'
-                    });
-                    return;
-                }
-
-                console.log('Route handler - getPossibleMoves called with:', { 
-                    gameId: request.params.gameId, 
-                    position: request.params.position,
-                    userId: request.user.id 
-                });
-
-                let validatedArgs: any[] = [];
                 validatedArgs = templateService.getValidatedArgs({ args, request, response });
 
                 const controller = new ChessController();
-                await templateService.apiHandler({
-                    methodName: 'getPossibleMoves',
-                    controller,
-                    response,
-                    next,
-                    validatedArgs,
-                    successStatus: undefined,
-                });
+
+              await templateService.apiHandler({
+                methodName: 'getPossibleMoves',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
             } catch (err) {
-                console.error('Route handler - Error:', err);
-                response.status(500).json({ 
-                    message: 'Internal server error', 
-                    error: err instanceof Error ? err.message : String(err) 
-                });
+                return next(err);
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -445,6 +415,69 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'resignGame',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/chess/history',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(ChessController)),
+            ...(fetchMiddlewares<RequestHandler>(ChessController.prototype.getGameHistory)),
+
+            async function ChessController_getGameHistory(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new ChessController();
+
+              await templateService.apiHandler({
+                methodName: 'getGameHistory',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/chess/history/:gameId',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(ChessController)),
+            ...(fetchMiddlewares<RequestHandler>(ChessController.prototype.getGameHistoryById)),
+
+            async function ChessController_getGameHistoryById(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    gameId: {"in":"path","name":"gameId","required":true,"dataType":"string"},
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new ChessController();
+
+              await templateService.apiHandler({
+                methodName: 'getGameHistoryById',
                 controller,
                 response,
                 next,
@@ -561,65 +594,6 @@ export function RegisterRoutes(app: Router) {
     }
 
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-    app.get('/chess/history',
-        authenticateMiddleware([{"jwt":[]}]),
-        ...(fetchMiddlewares<RequestHandler>(ChessController)),
-        ...(fetchMiddlewares<RequestHandler>(ChessController.prototype.getGameHistory)),
-
-        async function ChessController_getGameHistory(request: ExRequest, response: ExResponse, next: any) {
-            const args: Record<string, TsoaRoute.ParameterSchema> = {
-                request: {"in":"request","name":"request","required":true,"dataType":"object"},
-            };
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args, request, response });
-                const controller = new ChessController();
-
-                await templateService.apiHandler({
-                    methodName: 'getGameHistory',
-                    controller,
-                    response,
-                    next,
-                    validatedArgs,
-                    successStatus: undefined,
-                });
-            } catch (err) {
-                return next(err);
-            }
-        }
-    );
-
-    app.get('/chess/history/:gameId',
-        authenticateMiddleware([{"jwt":[]}]),
-        ...(fetchMiddlewares<RequestHandler>(ChessController)),
-        ...(fetchMiddlewares<RequestHandler>(ChessController.prototype.getGameHistoryById)),
-
-        async function ChessController_getGameHistoryById(request: ExRequest, response: ExResponse, next: any) {
-            const args: Record<string, TsoaRoute.ParameterSchema> = {
-                gameId: {"in":"path","name":"gameId","required":true,"dataType":"string"},
-                request: {"in":"request","name":"request","required":true,"dataType":"object"},
-            };
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args, request, response });
-                const controller = new ChessController();
-
-                await templateService.apiHandler({
-                    methodName: 'getGameHistoryById',
-                    controller,
-                    response,
-                    next,
-                    validatedArgs,
-                    successStatus: undefined,
-                });
-            } catch (err) {
-                return next(err);
-            }
-        }
-    );
 }
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
