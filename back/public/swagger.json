@@ -138,7 +138,9 @@
 				},
 				"required": [
 					"success",
-					"message"
+					"message",
+					"isCheck",
+					"isCheckmate"
 				],
 				"type": "object",
 				"additionalProperties": false

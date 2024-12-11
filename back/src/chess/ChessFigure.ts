@@ -9,32 +9,38 @@ export abstract class ChessFigure {
     protected color: ChessColor
   ) {}
 
-  abstract canMoveTo(targetPosition: [number, number], boardState: string[][]): boolean;
+  abstract canMoveTo(
+    targetPosition: [number, number],
+    boardState: string[][]
+  ): boolean;
 
   getPossibleMoves(boardState: string[][]): [number, number][] {
     const possibleMoves: [number, number][] = [];
-    
+
     // Check all possible squares on the board
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const targetPosition: [number, number] = [col, row];
-        
+
         // Skip if the target position is the same as current position
         if (col === this.position[0] && row === this.position[1]) {
           continue;
         }
-        
+
         // Check if the move is valid according to piece rules
         if (this.canMoveTo(targetPosition, boardState)) {
           // Check if target square has a piece of the same color
           const targetPiece = boardState[row][col];
-          if (!targetPiece || targetPiece[0] !== (this.color === ChessColor.WHITE ? "W" : "B")) {
+          if (
+            !targetPiece ||
+            targetPiece[0] !== (this.color === ChessColor.WHITE ? "W" : "B")
+          ) {
             possibleMoves.push(targetPosition);
           }
         }
       }
     }
-    
+
     return possibleMoves;
   }
 
@@ -55,17 +61,20 @@ export abstract class ChessFigure {
     return fromX === toX || fromY === toY;
   }
 
-  protected isPathClear(targetPosition: [number, number], boardState: string[][]): boolean {
+  protected isPathClear(
+    targetPosition: [number, number],
+    boardState: string[][]
+  ): boolean {
     const [fromX, fromY] = this.position;
     const [toX, toY] = targetPosition;
-    
+
     // Calculate direction
     const dx = Math.sign(toX - fromX);
     const dy = Math.sign(toY - fromY);
-    
+
     let currentX = fromX + dx;
     let currentY = fromY + dy;
-    
+
     // Check each square along the path
     while (currentX !== toX || currentY !== toY) {
       if (boardState[currentY][currentX] !== "") {
@@ -74,7 +83,28 @@ export abstract class ChessFigure {
       currentX += dx;
       currentY += dy;
     }
-    
+
     return true;
+  }
+
+  public isThreateningKing(boardState: string[][]): boolean {
+    const kingSymbol = this.color === ChessColor.WHITE ? "BK" : "WK";
+
+    // Trouver la position du roi adverse
+    let kingPosition: [number, number] | null = null;
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        if (boardState[row][col] === kingSymbol) {
+          kingPosition = [col, row];
+          break;
+        }
+      }
+      if (kingPosition) break;
+    }
+
+    if (!kingPosition) return false;
+
+    // Vérifier si la pièce peut capturer le roi
+    return this.canMoveTo(kingPosition, boardState);
   }
 }

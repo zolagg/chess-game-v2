@@ -7,9 +7,9 @@ export interface ChessMoveInputDTO {
 export interface ChessMoveOutputDTO {
   success: boolean;
   message: string;
-  board?: string[][]; // Représentation du plateau après le mouvement
-  isCheck?: boolean; // Si le roi est en échec
-  isCheckmate?: boolean; // Si c'est un échec et mat
+  board?: string[][];
+  isCheck: boolean;
+  isCheckmate: boolean;
   isFinished?: boolean;
   winnerColor?: "WHITE" | "BLACK";
 }
