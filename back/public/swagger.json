@@ -85,10 +85,19 @@
 						"type": "boolean"
 					},
 					"moves": {
-						"items": {
-							"type": "string"
-						},
+						"items": {},
 						"type": "array"
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"IN_PROGRESS",
+							"COMPLETED",
+							"RESIGNED"
+						]
+					},
+					"isFinished": {
+						"type": "boolean"
 					}
 				},
 				"required": [
@@ -97,7 +106,9 @@
 					"currentTurn",
 					"isCheck",
 					"isCheckmate",
-					"moves"
+					"moves",
+					"status",
+					"isFinished"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -141,12 +152,19 @@
 							"WHITE",
 							"BLACK"
 						]
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"IN_PROGRESS",
+							"COMPLETED",
+							"RESIGNED"
+						]
 					}
 				},
 				"required": [
 					"success",
 					"message",
-					"currentTurn",
 					"isCheck",
 					"isCheckmate"
 				],
@@ -622,6 +640,60 @@
 						}
 					}
 				]
+			}
+		},
+		"/chess/reconstruct/{gameId}": {
+			"post": {
+				"operationId": "ReconstructBoardState",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ChessMoveOutputDTO"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Chess"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "gameId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"moves": {
+										"items": {},
+										"type": "array"
+									}
+								},
+								"required": [
+									"moves"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/auth": {

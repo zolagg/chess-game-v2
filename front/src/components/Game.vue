@@ -102,8 +102,6 @@ const resignGame = async () => {
 };
 
 onMounted(async () => {
-  console.log('Game component mounted, gameId:', gameId);
-  
   if (!gameId) {
     console.error('No gameId provided');
     router.push('/');
@@ -116,6 +114,8 @@ onMounted(async () => {
     console.log('Game state received:', gameState);
     if (gameStore.isFinished) {
       currentMoveIndex.value = gameStore.moves.length - 1;
+      const moveHistory = gameStore.moves.slice(0, gameStore.moves.length);
+      await gameStore.reconstructBoardState(moveHistory);
     }
   } catch (error: any) {
     console.error('Error fetching game state:', error);
@@ -131,15 +131,15 @@ onMounted(async () => {
 
 const currentMoveIndex = ref(0);
 const gameStatus = computed(() => {
-  if (gameStore.status === 'RESIGNED') return 'RESIGNED';
-  if (gameStore.status === 'COMPLETED') return 'COMPLETED';
-  return 'IN_PROGRESS';
+  return gameStore.status || 'IN_PROGRESS';
 });
 
-const handleMoveNavigation = (index: number) => {
+const handleMoveNavigation = async (index: number) => {
+  if (index < 0 || index >= gameStore.moves.length) return;
+  
   currentMoveIndex.value = index;
   const moveHistory = gameStore.moves.slice(0, index + 1);
-  gameStore.reconstructBoardState(moveHistory);
+  await gameStore.reconstructBoardState(moveHistory);
 };
 </script>
 

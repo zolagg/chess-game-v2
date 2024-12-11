@@ -41,6 +41,8 @@ export class ChessController extends Controller {
       isCheck: false,
       isCheckmate: false,
       moves: JSON.parse(game.moves_history),
+      status: game.status,
+      isFinished: game.is_finished
     };
   }
 
@@ -59,6 +61,8 @@ export class ChessController extends Controller {
       isCheck: false,
       isCheckmate: false,
       moves: JSON.parse(game.moves_history),
+      status: game.status,
+      isFinished: game.is_finished
     };
   }
 
@@ -168,6 +172,27 @@ export class ChessController extends Controller {
       createdAt: game.createdAt,
       winner: game.winner_color,
       moves: JSON.parse(game.moves_history)
+    };
+  }
+
+  @Post("/reconstruct/{gameId}")
+  public async reconstructBoardState(
+    @Path() gameId: string,
+    @Body() body: { moves: any[] },
+    @Request() request: any
+  ): Promise<ChessMoveOutputDTO> {
+    const userId = request.user.id;
+    const game = await this.chessService.reconstructBoardState(parseInt(gameId), userId, body.moves);
+
+    return {
+      success: true,
+      message: "Board state reconstructed",
+      board: JSON.parse(game.board_state),
+      isCheck: false,
+      isCheckmate: false,
+      isFinished: game.is_finished,
+      status: game.status,
+      winnerColor: game.winner_color
     };
   }
 }

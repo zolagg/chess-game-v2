@@ -605,6 +605,46 @@ export class ChessService {
     });
     return games;
   }
+
+  public async reconstructBoardState(
+    gameId: number,
+    userId: number,
+    moves: any[]
+  ): Promise<ChessGame> {
+    const game = await this.getGame(gameId, userId);
+    
+    // Start with initial board state
+    let boardState = JSON.parse(JSON.stringify(this.INITIAL_BOARD_STATE));
+    
+    // Apply each move to reconstruct the board
+    for (const move of moves) {
+      if (move.from === "auto" || move.to === "auto") continue;
+      
+      const [fromFile, fromRank] = move.from.split("");
+      const [toFile, toRank] = move.to.split("");
+
+      const fromPosition: [number, number] = [
+        fromFile.charCodeAt(0) - 97,
+        8 - parseInt(fromRank)
+      ];
+      const toPosition: [number, number] = [
+        toFile.charCodeAt(0) - 97,
+        8 - parseInt(toRank)
+      ];
+
+      boardState[toPosition[1]][toPosition[0]] = move.piece;
+      boardState[fromPosition[1]][fromPosition[0]] = "";
+    }
+
+    // Update the game's board state but don't save it
+    game.board_state = JSON.stringify(boardState);
+    
+    return game;
+  }
+
+  public getInitialBoardState(): string[][] {
+    return JSON.parse(JSON.stringify(this.INITIAL_BOARD_STATE));
+  }
 }
 
 export const chessService = new ChessService();

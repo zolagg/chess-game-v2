@@ -55,7 +55,9 @@ const models: TsoaRoute.Models = {
             "currentTurn": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["WHITE"]},{"dataType":"enum","enums":["BLACK"]}],"required":true},
             "isCheck": {"dataType":"boolean","required":true},
             "isCheckmate": {"dataType":"boolean","required":true},
-            "moves": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "moves": {"dataType":"array","array":{"dataType":"any"},"required":true},
+            "status": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["IN_PROGRESS"]},{"dataType":"enum","enums":["COMPLETED"]},{"dataType":"enum","enums":["RESIGNED"]}],"required":true},
+            "isFinished": {"dataType":"boolean","required":true},
         },
         "additionalProperties": false,
     },
@@ -66,10 +68,12 @@ const models: TsoaRoute.Models = {
             "success": {"dataType":"boolean","required":true},
             "message": {"dataType":"string","required":true},
             "board": {"dataType":"array","array":{"dataType":"array","array":{"dataType":"string"}}},
+            "currentTurn": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["WHITE"]},{"dataType":"enum","enums":["BLACK"]}]},
             "isCheck": {"dataType":"boolean","required":true},
             "isCheckmate": {"dataType":"boolean","required":true},
             "isFinished": {"dataType":"boolean"},
             "winnerColor": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["WHITE"]},{"dataType":"enum","enums":["BLACK"]}]},
+            "status": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["IN_PROGRESS"]},{"dataType":"enum","enums":["COMPLETED"]},{"dataType":"enum","enums":["RESIGNED"]}]},
         },
         "additionalProperties": false,
     },
@@ -478,6 +482,39 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'getGameHistoryById',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/chess/reconstruct/:gameId',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(ChessController)),
+            ...(fetchMiddlewares<RequestHandler>(ChessController.prototype.reconstructBoardState)),
+
+            async function ChessController_reconstructBoardState(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    gameId: {"in":"path","name":"gameId","required":true,"dataType":"string"},
+                    body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"moves":{"dataType":"array","array":{"dataType":"any"},"required":true}}},
+                    request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new ChessController();
+
+              await templateService.apiHandler({
+                methodName: 'reconstructBoardState',
                 controller,
                 response,
                 next,
