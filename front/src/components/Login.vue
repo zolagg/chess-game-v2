@@ -26,7 +26,10 @@ const handleLogin = async () => {
 
   try {
     await authStore.login(username.value, password.value);
-    router.push('/');
+    // Check for redirect path
+    const redirectPath = localStorage.getItem('redirectPath') || '/';
+    localStorage.removeItem('redirectPath'); // Clear stored path
+    router.push(redirectPath);
   } catch (error: any) {
     toast.add({
       severity: 'error',
@@ -153,4 +156,28 @@ button {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-</style> 
+
+.session-expired-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #f87171;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  z-index: 50;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+</style>
