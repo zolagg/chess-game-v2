@@ -83,7 +83,6 @@
 
 .square:hover {
   @apply opacity-90;
-  transform: scale(1.05);
 }
 
 .light {
@@ -110,6 +109,10 @@
 
 .piece-icon {
   @apply transform transition-transform duration-200 hover:scale-110 z-10;
+}
+
+.piece-icon:hover {
+  transform: scale(1.1);
 }
 
 .white-piece {
