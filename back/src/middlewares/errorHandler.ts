@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { ChessError } from "../error/ChessError";
 
 // Interface pour les erreurs
 interface Error {
@@ -15,26 +16,18 @@ const errorHandler = (
 ): void => {
   console.error("An error occurred:", err);
 
-  // Définir un statut d'erreur par défaut
-  const statusCode = err.status || 500;
-
-  if (statusCode === 400 && "fields" in err) {
-    for (let key in err.fields as string[]) {
-      let request: any = (err.fields as any[])[key];
-      if ("message" in request && "value" in request) {
-        err.message =
-          key.replace("requestBody.", "") +
-          " " +
-          request.value +
-          " " +
-          request.message;
-      }
-    }
+  if (err instanceof ChessError) {
+    res.status(err.status).json({
+      status: err.status,
+      message: err.message,
+    });
+    return;
   }
 
+  // Définir un statut d'erreur par défaut
+  const statusCode = (err as any).status || 500;
   const message = err.message || "Internal Server Error";
 
-  // Envoyer la réponse d'erreur au client
   res.status(statusCode).json({
     status: statusCode,
     message: message,

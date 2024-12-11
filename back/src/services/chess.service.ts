@@ -7,6 +7,7 @@ import { Knight } from "../chess/pieces/Knight";
 import { Bishop } from "../chess/pieces/Bishop";
 import { Queen } from "../chess/pieces/Queen";
 import { King } from "../chess/pieces/King";
+import { ChessError } from "../error/ChessError";
 
 export class ChessService {
   private readonly INITIAL_BOARD_STATE = [
@@ -64,7 +65,7 @@ export class ChessService {
     const game = await this.getGame(gameId, userId);
 
     if (game.is_finished) {
-      throw new Error("Game is already finished");
+      throw new ChessError("Game is already finished", 412);
     }
 
     const boardState = JSON.parse(game.board_state);
@@ -87,7 +88,7 @@ export class ChessService {
     const piece = boardState[fromPosition[1]][fromPosition[0]];
 
     if (!piece) {
-      throw new Error("No piece at starting position");
+      throw new ChessError("No piece at starting position", 412);
     }
 
     // Verify it's the correct player's turn
@@ -95,7 +96,7 @@ export class ChessService {
       ? ChessColor.WHITE
       : ChessColor.BLACK;
     if (pieceColor !== game.current_turn) {
-      throw new Error(`Not your turn - Current turn is ${game.current_turn}`);
+      throw new ChessError(`Not your turn - Current turn is ${game.current_turn}`, 412);
     }
 
     // Create the appropriate chess piece instance
@@ -127,13 +128,13 @@ export class ChessService {
 
     // Validate the move using the piece's movement rules
     if (!chessPiece.canMoveTo(toPosition, boardState)) {
-      throw new Error("Invalid move for this piece type");
+      throw new ChessError("Invalid move for this piece type", 412);
     }
 
     // Check if target square has a piece of the same color
     const targetPiece = boardState[toPosition[1]][toPosition[0]];
     if (targetPiece && targetPiece.startsWith(piece[0])) {
-      throw new Error("Cannot capture your own piece");
+      throw new ChessError("Cannot capture your own piece", 412);
     }
 
     // Check if a king was captured

@@ -84,12 +84,10 @@ export const useGameStore = defineStore("game", {
         if (response.data.board) {
           this.board = response.data.board;
           
-          // Update game state
           if (response.data.currentTurn) {
             this.currentTurn = response.data.currentTurn;
           }
           
-          // Handle game over
           if (response.data.isFinished) {
             this.isFinished = true;
             this.winnerColor = response.data.winnerColor;
@@ -100,7 +98,13 @@ export const useGameStore = defineStore("game", {
         return true;
       } catch (error: any) {
         console.error("Move error:", error);
-        this.error = error.response?.data?.message || "Failed to make move";
+        if (error.response?.status === 412) {
+          this.error = error.response.data.message;
+        } else if (error.code === "ERR_NETWORK") {
+          this.error = "Unable to connect to the game server. Please check your connection.";
+        } else {
+          this.error = error.response?.data?.message || "An unexpected error occurred";
+        }
         return false;
       } finally {
         this.loading = false;
