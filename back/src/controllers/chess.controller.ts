@@ -147,7 +147,7 @@ export class ChessController extends Controller {
     const games = await this.chessService.getGameHistory(userId);
     return games.map(game => ({
       id: game.id,
-      status: game.is_finished ? 'COMPLETED' : 'IN_PROGRESS',
+      status: game.status,
       createdAt: game.createdAt,
       winner: game.winner_color
     }));
@@ -162,7 +162,7 @@ export class ChessController extends Controller {
     const game = await this.chessService.getGame(parseInt(gameId), userId);
     return {
       id: game.id,
-      status: game.is_finished ? 'COMPLETED' : 'IN_PROGRESS',
+      status: game.status,
       createdAt: game.createdAt,
       winner: game.winner_color,
       moves: JSON.parse(game.moves_history)

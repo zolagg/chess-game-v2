@@ -1,4 +1,4 @@
-import { ChessGame, ChessColor } from "../models/chess.model";
+import { ChessGame, ChessColor, GameStatus } from "../models/chess.model";
 import { User } from "../models/user.model";
 import { notFound } from "../error/NotFoundError";
 import { Pawn } from "../chess/pieces/Pawn";
@@ -40,7 +40,8 @@ export class ChessService {
         current_turn: ChessColor.WHITE,
         board_state: JSON.stringify(this.INITIAL_BOARD_STATE),
         moves_history: "[]",
-        is_finished: false
+        is_finished: false,
+        status: GameStatus.IN_PROGRESS
       };
       console.log("Creating game with data:", gameData);
 
@@ -187,6 +188,7 @@ export class ChessService {
     if (isCheckmate) {
       game.is_finished = true;
       game.winner_color = pieceColor;
+      game.status = GameStatus.COMPLETED;
     }
 
     // Stocker l'information d'échec et mat dans l'historique
@@ -214,7 +216,8 @@ export class ChessService {
     }
 
     game.is_finished = true;
-    game.winner_color = ChessColor.BLACK; // Si le joueur (blanc) abandonne, le noir gagne
+    game.winner_color = game.current_turn === ChessColor.WHITE ? ChessColor.BLACK : ChessColor.WHITE;
+    game.status = GameStatus.RESIGNED;
     await game.save();
 
     return game;

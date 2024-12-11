@@ -189,6 +189,31 @@ export const useGameStore = defineStore("game", {
       } finally {
         this.loading = false;
       }
+    },
+    async resignGame(gameId: string) {
+      this.loading = true;
+      try {
+        const response = await axios.post(`/chess/resign/${gameId}`);
+        if (response.data) {
+          this.board = response.data.board;
+          this.isFinished = true;
+          // Assuming black wins when white resigns
+          this.winnerColor = 'BLACK';
+        }
+        return true;
+      } catch (error: any) {
+        let errorMessage: string;
+        if (error.response?.status === 412) {
+          errorMessage = error.response.data.message;
+        } else if (error.code === "ERR_NETWORK") {
+          errorMessage = "Unable to connect to the game server. Please check your connection.";
+        } else {
+          errorMessage = error.response?.data?.message || "An unexpected error occurred";
+        }
+        throw new Error(errorMessage);
+      } finally {
+        this.loading = false;
+      }
     }
   },
 });

@@ -16,6 +16,12 @@ export enum ChessPieceType {
   KING = "KING",
 }
 
+export enum GameStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  RESIGNED = "RESIGNED"
+}
+
 export interface ChessGameAttributes {
   id?: number;
   user_id: number;
@@ -24,6 +30,7 @@ export interface ChessGameAttributes {
   moves_history: string;
   is_finished: boolean;
   winner_color?: ChessColor;
+  status: GameStatus;
 }
 
 export class ChessGame
@@ -37,6 +44,7 @@ export class ChessGame
   public moves_history!: string;
   public is_finished!: boolean;
   public winner_color?: ChessColor;
+  public status!: GameStatus;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -78,6 +86,11 @@ ChessGame.init(
     winner_color: {
       type: DataTypes.ENUM(...Object.values(ChessColor)),
       allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM(...Object.values(GameStatus)),
+      allowNull: false,
+      defaultValue: GameStatus.IN_PROGRESS,
     },
   },
   {
