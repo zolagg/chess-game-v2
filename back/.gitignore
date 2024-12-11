@@ -12,3 +12,4 @@ coverage/
 .DS_Store
 # Documentation
 docs/swagger/
+public/swagger.json
