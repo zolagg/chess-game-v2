@@ -15,11 +15,16 @@
       <div v-if="gameStore.error" class="error-message">
         {{ gameStore.error }}
       </div>
-      <div class="chessboard-wrapper">
-        <Chessboard 
-          :board="gameStore.board" 
-          @square-clicked="onSquareClicked" 
-        />
+      <div class="game-content">
+        <div class="game-board">
+          <Chessboard 
+            :board="gameStore.board" 
+            @square-clicked="onSquareClicked" 
+          />
+        </div>
+        <div class="game-sidebar">
+          <MoveHistory :moves="gameStore.moves" />
+        </div>
       </div>
     </div>
   </div>
@@ -31,6 +36,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useGameStore } from '../stores/game';
 import Chessboard from './Chessboard.vue';
+import MoveHistory from './MoveHistory.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -79,8 +85,16 @@ onMounted(async () => {
   -webkit-text-fill-color: transparent;
 }
 
-.chessboard-wrapper {
-  @apply flex-1 flex justify-center items-center;
+.game-content {
+  @apply flex gap-6;
+}
+
+.game-board {
+  @apply flex-1;
+}
+
+.game-sidebar {
+  @apply w-64 bg-white rounded-lg shadow-md p-4;
 }
 
 .new-game-btn {
