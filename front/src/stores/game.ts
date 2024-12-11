@@ -168,7 +168,7 @@ export const useGameStore = defineStore("game", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get('/chess/games');
+        const response = await axios.get('/chess/history');
         if (response.data) {
           this.gameHistory = response.data.map((game: any) => ({
             id: game.id,
