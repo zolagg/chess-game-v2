@@ -12,33 +12,16 @@
           <i class="fas fa-flag mr-2"></i>
           Resign
         </button>
+    <div class="game-content">
+      <div class="game-board">
+        <Chessboard 
+          :board="gameStore.board" 
+          @square-clicked="onSquareClicked" 
+        />
       </div>
-    </div>
-    
-    <div v-if="gameStore.error" class="error-message">
-      {{ gameStore.error }}
-    </div>
-    
-    <div v-if="gameStore.isFinished" class="game-over-overlay">
-      <div class="game-over-content">
-        <h3 class="winner-text">
-          {{ gameStore.winnerColor === 'WHITE' ? 'White' : 'Black' }} wins!
-        </h3>
-        <button 
-          @click="startNewGame" 
-          class="new-game-btn"
-        >
-          <i class="fas fa-play mr-2"></i>
-          New Game
-        </button>
+      <div class="game-sidebar">
+        <MoveHistory :moves="gameStore.moves" />
       </div>
-    </div>
-    
-    <div class="chessboard-wrapper">
-      <Chessboard 
-        :board="gameStore.board" 
-        @square-clicked="onSquareClicked" 
-      />
     </div>
   </div>
 </template>
@@ -50,6 +33,7 @@ import { useGameStore } from '../stores/game';
 import Chessboard from './Chessboard.vue';
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
+import MoveHistory from './MoveHistory.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -57,13 +41,21 @@ const gameStore = useGameStore();
 const gameId = route.params.id as string;
 const toast = useToast();
 
-const onSquareClicked = async ({ from, to, piece }: { from: { row: number, col: number }, to: { row: number, col: number }, piece: string }) => {
+const onSquareClicked = async ({
+  from,
+  to,
+  piece,
+}: {
+  from: { row: number; col: number };
+  to: { row: number; col: number };
+  piece: string;
+}) => {
   if (!gameId) return;
-  
+
   if (from && to) {
     const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
     const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
-    await gameStore.makeMove(gameId, fromSquare, toSquare);
+    await gameStore.makeMove(fromSquare, toSquare, piece);
   }
 };
 
@@ -95,15 +87,15 @@ onMounted(async () => {
 
 <style lang="postcss" scoped>
 .game-container {
-  @apply max-w-7xl mx-auto px-4 py-6 space-y-6;
+  @apply p-4;
 }
 
-.game-header {
-  @apply flex justify-between items-center;
+.game-content {
+  @apply flex gap-6;
 }
 
-.game-title {
-  @apply text-2xl font-bold text-primary;
+.game-board {
+  @apply flex-1;
 }
 
 .resign-btn {
@@ -142,5 +134,7 @@ onMounted(async () => {
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
+.game-sidebar {
+  @apply w-64 bg-white rounded-lg shadow-md p-4;
 }
 </style> 

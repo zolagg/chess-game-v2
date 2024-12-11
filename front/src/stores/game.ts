@@ -82,11 +82,25 @@ export const useGameStore = defineStore("game", {
 
         if (response.data.board) {
           this.board = response.data.board;
+<<<<<<< HEAD
           
+=======
+>>>>>>> dev
           if (response.data.currentTurn) {
             this.currentTurn = response.data.currentTurn;
           }
           
+<<<<<<< HEAD
+=======
+          // Ajouter le nouveau mouvement à l'historique
+          this.moves.push({
+            from,
+            to,
+            piece,
+            timestamp: new Date()
+          });
+          
+>>>>>>> dev
           if (response.data.isFinished) {
             this.isFinished = true;
             this.winnerColor = response.data.winnerColor;
