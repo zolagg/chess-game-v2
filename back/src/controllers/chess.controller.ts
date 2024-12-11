@@ -178,7 +178,7 @@ export class ChessController extends Controller {
   @Post("/reconstruct/{gameId}")
   public async reconstructBoardState(
     @Path() gameId: string,
-    @Body() body: { moves: any[] },
+    @Body() body: { moves: any[] }, 
     @Request() request: any
   ): Promise<ChessMoveOutputDTO> {
     const userId = request.user.id;

@@ -124,8 +124,12 @@ const viewGame = (gameId: number) => {
 
 const startNewGame = async () => {
   try {
-    const game = await gameStore.startNewGame();
-    router.push(`/game/${game.id}`);
+    const gameData = await gameStore.startNewGame();
+    if (gameData && gameData.gameId) {
+      router.push(`/game/${gameData.gameId}`);
+    } else {
+      throw new Error('Failed to create new game');
+    }
   } catch (error: any) {
     toast.add({
       severity: 'error',

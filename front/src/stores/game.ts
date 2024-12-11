@@ -49,21 +49,27 @@ export const useGameStore = defineStore("game", {
         console.log("Starting new game...");
         const response = await axios.post("/chess/new-game");
         console.log("New game response:", response.data);
+        
         this.board = response.data.board;
         this.currentTurn = response.data.currentTurn;
         this.isCheck = response.data.isCheck;
         this.isCheckmate = response.data.isCheckmate;
         this.moves = response.data.moves;
         this.gameId = response.data.gameId;
-        return response.data;
+        this.status = 'IN_PROGRESS';
+        this.isFinished = false;
+        this.winnerColor = null;
+        
+        return {
+          ...response.data,
+          gameId: response.data.gameId
+        };
       } catch (error: any) {
         console.error("Start game error:", error);
         if (error.code === "ERR_NETWORK") {
-          this.error =
-            "Unable to connect to the game server. Please check your connection.";
+          this.error = "Unable to connect to the game server. Please check your connection.";
         } else {
-          this.error =
-            error.response?.data?.message || "Failed to start new game";
+          this.error = error.response?.data?.message || "Failed to start new game";
         }
         throw error;
       } finally {

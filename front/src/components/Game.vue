@@ -30,6 +30,7 @@
         </div>
         <div class="game-sidebar">
           <MoveNavigator 
+            v-if="isNavigationEnabled"
             :currentMoveIndex="currentMoveIndex"
             :totalMoves="gameStore.moves.length"
             :gameStatus="gameStatus"
@@ -134,7 +135,12 @@ const gameStatus = computed(() => {
   return gameStore.status || 'IN_PROGRESS';
 });
 
+const isNavigationEnabled = computed(() => {
+  return gameStore.status === 'RESIGNED' || gameStore.status === 'COMPLETED';
+});
+
 const handleMoveNavigation = async (index: number) => {
+  if (!isNavigationEnabled.value) return;
   if (index < 0 || index >= gameStore.moves.length) return;
   
   currentMoveIndex.value = index;
