@@ -87,6 +87,7 @@ export class ChessController extends Controller {
           ? "Check!"
           : "Move successful",
       board: JSON.parse(game.board_state),
+      currentTurn: game.current_turn,
       isCheck: lastMove.isCheck,
       isCheckmate: lastMove.isCheckmate,
       isFinished: game.is_finished,
@@ -134,6 +135,7 @@ export class ChessController extends Controller {
       success: true,
       message: "Game resigned",
       board: JSON.parse(game.board_state),
+      currentTurn: game.current_turn,
       isCheck: false,
       isCheckmate: false,
     };

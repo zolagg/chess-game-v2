@@ -119,6 +119,13 @@
 						},
 						"type": "array"
 					},
+					"currentTurn": {
+						"type": "string",
+						"enum": [
+							"WHITE",
+							"BLACK"
+						]
+					},
 					"isCheck": {
 						"type": "boolean"
 					},
@@ -139,6 +146,7 @@
 				"required": [
 					"success",
 					"message",
+					"currentTurn",
 					"isCheck",
 					"isCheckmate"
 				],

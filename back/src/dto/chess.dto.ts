@@ -8,6 +8,7 @@ export interface ChessMoveOutputDTO {
   success: boolean;
   message: string;
   board?: string[][];
+  currentTurn: "WHITE" | "BLACK";
   isCheck: boolean;
   isCheckmate: boolean;
   isFinished?: boolean;

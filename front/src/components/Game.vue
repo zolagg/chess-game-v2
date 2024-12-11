@@ -16,6 +16,10 @@
       
       <div class="game-content">
         <div class="game-board" v-if="gameStore.board">
+          <TurnIndicator 
+            :currentTurn="gameStore.currentTurn" 
+            :isCheck="gameStore.isCheck" 
+          />
           <Chessboard 
             :board="gameStore.board" 
             @square-clicked="onSquareClicked" 
@@ -40,6 +44,7 @@ import Chessboard from './Chessboard.vue';
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
 import MoveHistory from './MoveHistory.vue';
+import TurnIndicator from './TurnIndicator.vue';
 
 const route = useRoute();
 const router = useRouter();
