@@ -69,7 +69,6 @@ export const useGameStore = defineStore("game", {
 
     async makeMove(from: string, to: string, piece: string) {
       this.loading = true;
-      this.error = null;
       try {
         if (!this.gameId) {
           throw new Error("No active game");
@@ -91,21 +90,20 @@ export const useGameStore = defineStore("game", {
           if (response.data.isFinished) {
             this.isFinished = true;
             this.winnerColor = response.data.winnerColor;
-            this.error = `Game Over - ${response.data.winnerColor} wins!`;
           }
         }
 
         return true;
       } catch (error: any) {
-        console.error("Move error:", error);
+        let errorMessage: string;
         if (error.response?.status === 412) {
-          this.error = error.response.data.message;
+          errorMessage = error.response.data.message;
         } else if (error.code === "ERR_NETWORK") {
-          this.error = "Unable to connect to the game server. Please check your connection.";
+          errorMessage = "Unable to connect to the game server. Please check your connection.";
         } else {
-          this.error = error.response?.data?.message || "An unexpected error occurred";
+          errorMessage = error.response?.data?.message || "An unexpected error occurred";
         }
-        return false;
+        throw new Error(errorMessage);
       } finally {
         this.loading = false;
       }

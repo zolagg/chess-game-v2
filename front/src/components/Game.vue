@@ -1,5 +1,6 @@
 <template>
   <div class="game-container">
+    <Toast position="top-right" />
     <div class="game-header">
       <h2 class="game-title">Game #{{ gameId }}</h2>
       <div class="game-controls">
@@ -43,15 +44,18 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGameStore } from '../stores/game';
 import Chessboard from './Chessboard.vue';
+import { useToast } from 'primevue/usetoast';
+import Toast from 'primevue/toast';
 
 const route = useRoute();
 const router = useRouter();
 const gameStore = useGameStore();
 const gameId = route.params.id as string;
+const toast = useToast();
 
 const onSquareClicked = async ({ from, to, piece }: { from: { row: number, col: number }, to: { row: number, col: number }, piece: string }) => {
   if (!gameId) return;
@@ -72,6 +76,17 @@ const startNewGame = async () => {
   await gameStore.startNewGame();
   router.push('/');
 };
+
+watch(() => gameStore.error, (newError) => {
+  if (newError) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: newError,
+      life: 3000
+    });
+  }
+});
 
 onMounted(async () => {
   await gameStore.getGameState(gameId);
@@ -95,10 +110,6 @@ onMounted(async () => {
   @apply px-4 py-2 rounded-lg bg-red-500 text-white font-medium
          flex items-center gap-2 hover:bg-red-600 transition-all duration-200
          disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.error-message {
-  @apply text-red-500 text-center mb-4 p-4 bg-red-50 rounded-lg;
 }
 
 .chessboard-wrapper {

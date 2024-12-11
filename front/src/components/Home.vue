@@ -1,5 +1,6 @@
 <template>
   <div class="home-container">
+    <Toast position="top-right" />
     <div class="game-section">
       <div class="game-header">
         <h1 class="title">Welcome to Chess Game</h1>
@@ -11,9 +12,6 @@
           <i class="fas fa-plus mr-2"></i>
           New Game
         </button>
-      </div>
-      <div v-if="gameStore.error" class="error-message">
-        {{ gameStore.error }}
       </div>
       <div class="chessboard-wrapper">
         <Chessboard 
@@ -31,18 +29,26 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useGameStore } from '../stores/game';
 import Chessboard from './Chessboard.vue';
+import { useToast } from 'primevue/usetoast';
+import Toast from 'primevue/toast';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const gameStore = useGameStore();
+const toast = useToast();
 
 const startNewGame = async () => {
   await gameStore.startNewGame();
 };
 
-const onSquareClicked = async ({ from, to, piece }: { from: { row: number, col: number }, to: { row: number, col: number }, piece: string }) => {
+const onSquareClicked = async ({ from, to, piece }) => {
   if (!gameStore.gameId) {
-    gameStore.error = 'No active game. Please start a new game.';
+    toast.add({
+      severity: 'error',
+      summary: 'Game Error',
+      detail: 'No active game. Please start a new game.',
+      life: 3000
+    });
     return;
   }
   
@@ -50,7 +56,16 @@ const onSquareClicked = async ({ from, to, piece }: { from: { row: number, col: 
     const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
     const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
     console.log('Move:', { from: fromSquare, to: toSquare, piece });
-    await gameStore.makeMove(fromSquare, toSquare, piece);
+    try {
+      await gameStore.makeMove(fromSquare, toSquare, piece);
+    } catch (error: any) {
+      toast.add({
+        severity: 'error',
+        summary: 'Move Error',
+        detail: error.message,
+        life: 3000
+      });
+    }
   }
 };
 
@@ -87,9 +102,5 @@ onMounted(async () => {
   @apply px-4 py-2 rounded-lg bg-primary text-white font-medium
          flex items-center gap-2 hover:bg-primary/90 transition-all duration-200
          disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.error-message {
-  @apply text-red-500 text-center mb-4 p-4 bg-red-50 rounded-lg;
 }
 </style>
