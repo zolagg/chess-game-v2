@@ -46,12 +46,7 @@ export const useGameStore = defineStore("game", {
         this.isCheckmate = response.data.isCheckmate;
         this.moves = response.data.moves;
         this.gameId = response.data.gameId;
-        console.log("Game state after update:", {
-          gameId: this.gameId,
-          board: this.board,
-          currentTurn: this.currentTurn,
-        });
-        return true;
+        return response.data;
       } catch (error: any) {
         console.error("Start game error:", error);
         if (error.code === "ERR_NETWORK") {
@@ -61,7 +56,7 @@ export const useGameStore = defineStore("game", {
           this.error =
             error.response?.data?.message || "Failed to start new game";
         }
-        return false;
+        throw error;
       } finally {
         this.loading = false;
       }
@@ -133,6 +128,31 @@ export const useGameStore = defineStore("game", {
         this.error =
           error.response?.data?.message || "Failed to get possible moves";
         return [];
+      } finally {
+        this.loading = false;
+      }
+    },
+    async getGameState(gameId: string) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axios.get(`/chess/game-state/${gameId}`);
+        console.log("Game state response:", response.data);
+        this.board = response.data.board;
+        this.currentTurn = response.data.currentTurn;
+        this.isCheck = response.data.isCheck;
+        this.isCheckmate = response.data.isCheckmate;
+        this.moves = response.data.moves;
+        this.gameId = response.data.gameId;
+        return response.data;
+      } catch (error: any) {
+        console.error("Get game state error:", error);
+        if (error.code === "ERR_NETWORK") {
+          this.error = "Unable to connect to the game server. Please check your connection.";
+        } else {
+          this.error = error.response?.data?.message || "Failed to get game state";
+        }
+        throw error;
       } finally {
         this.loading = false;
       }

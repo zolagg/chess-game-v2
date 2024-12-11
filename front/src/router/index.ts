@@ -1,34 +1,54 @@
-import { createRouter, createWebHistory, RouteLocationNormalized } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { routes } from './routes'
+import Home from '../components/Home.vue'
+import Game from '../components/Game.vue'
+import Login from '../components/Login.vue'
+import History from '../components/History.vue'
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: Home,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/game/:id',
+      name: 'game',
+      component: Game,
+      props: true,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/history',
+      name: 'history',
+      component: History,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
+    }
+  ]
 })
 
-// Update document title
-const updateDocumentTitle = (to: RouteLocationNormalized) => {
-  const baseTitle = 'Chess App'
-  const pageTitle = to.meta.title as string
-  document.title = pageTitle ? `${pageTitle} - ${baseTitle}` : baseTitle
-}
-
-// Navigation guard
-router.beforeEach(async (to, from, next) => {
+router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.isAuthenticated
   const requiresAuth = to.meta.requiresAuth as boolean
 
-  updateDocumentTitle(to)
+  console.log('Route navigation:', {
+    to: to.path,
+    from: from.path,
+    isAuthenticated,
+    requiresAuth
+  })
 
   if (requiresAuth && !isAuthenticated) {
-    next({ 
-      name: 'Login',
-      query: { redirect: to.fullPath }
-    })
-  } else if (to.name === 'Login' && isAuthenticated) {
-    next({ name: 'Home' })
+    next('/login')
   } else {
     next()
   }

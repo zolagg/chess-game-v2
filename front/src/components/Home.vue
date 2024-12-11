@@ -1,123 +1,134 @@
 <template>
   <div class="home-container">
     <Toast position="top-right" />
-    <div class="game-section">
-      <div class="game-header">
-        <h1 class="title">Welcome to Chess Game</h1>
+    <div class="hero-section">
+      <h1 class="title">Welcome to Chess Game</h1>
+      <p class="subtitle">Challenge yourself in the classic game of strategy</p>
+      <div class="actions">
         <button 
           @click="startNewGame" 
           class="new-game-btn"
           :disabled="gameStore.loading"
         >
-          <i class="fas fa-plus mr-2"></i>
-          New Game
+          <i class="fas fa-play mr-2"></i>
+          Start New Game
+        </button>
+        <button 
+          @click="viewHistory" 
+          class="history-btn"
+        >
+          <i class="fas fa-history mr-2"></i>
+          View Game History
         </button>
       </div>
-      <div v-if="gameStore.error" class="error-message">
-        {{ gameStore.error }}
+    </div>
+    <div class="features-section">
+      <div class="feature-card">
+        <i class="fas fa-chess fa-2x mb-4"></i>
+        <h3>Classic Chess</h3>
+        <p>Play the traditional game with all standard rules</p>
       </div>
-      <div class="game-content">
-        <div class="game-board">
-          <Chessboard 
-            :board="gameStore.board" 
-            @square-clicked="onSquareClicked" 
-          />
-        </div>
-        <div class="game-sidebar">
-          <MoveHistory :moves="gameStore.moves" />
-        </div>
+      <div class="feature-card">
+        <i class="fas fa-trophy fa-2x mb-4"></i>
+        <h3>Track Progress</h3>
+        <p>Monitor your games and improve your strategy</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-mobile-alt fa-2x mb-4"></i>
+        <h3>Responsive Design</h3>
+        <p>Play on any device, anywhere</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/auth';
 import { useGameStore } from '../stores/game';
-import Chessboard from './Chessboard.vue';
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
-import MoveHistory from './MoveHistory.vue';
 
 const router = useRouter();
-const authStore = useAuthStore();
 const gameStore = useGameStore();
 const toast = useToast();
 
 const startNewGame = async () => {
-  await gameStore.startNewGame();
-};
-
-const onSquareClicked = async ({ from, to, piece }) => {
-  if (!gameStore.gameId) {
+  try {
+    const gameData = await gameStore.startNewGame();
+    if (gameData && gameData.gameId) {
+      router.push(`/game/${gameData.gameId}`);
+    } else {
+      throw new Error('Invalid game data received');
+    }
+  } catch (error: any) {
     toast.add({
       severity: 'error',
-      summary: 'Game Error',
-      detail: 'No active game. Please start a new game.',
+      summary: 'Error',
+      detail: error.message,
       life: 3000
     });
-    return;
-  }
-  
-  if (from && to) {
-    const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
-    const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
-    console.log('Move:', { from: fromSquare, to: toSquare, piece });
-    try {
-      await gameStore.makeMove(fromSquare, toSquare, piece);
-    } catch (error: any) {
-      toast.add({
-        severity: 'error',
-        summary: 'Move Error',
-        detail: error.message,
-        life: 3000
-      });
-    }
   }
 };
 
-onMounted(async () => {
-  await startNewGame();
-});
+const viewHistory = () => {
+  router.push('/history');
+};
 </script>
 
 <style lang="postcss" scoped>
 .home-container {
-  @apply h-[calc(100vh-4rem)] flex flex-col;
+  @apply min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 py-12;
 }
 
-.game-section {
-  @apply flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex flex-col;
-}
-
-.game-header {
-  @apply flex justify-center items-center mb-8;
+.hero-section {
+  @apply max-w-4xl mx-auto text-center px-4 mb-16;
 }
 
 .title {
-  @apply text-3xl font-bold;
-  background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
+  @apply text-5xl font-bold mb-4;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.game-content {
-  @apply flex gap-6;
+.subtitle {
+  @apply text-xl text-gray-600 mb-8;
 }
 
-.game-board {
-  @apply flex-1;
-}
-
-.game-sidebar {
-  @apply w-64 bg-white rounded-lg shadow-md p-4;
+.actions {
+  @apply flex flex-wrap justify-center gap-4;
 }
 
 .new-game-btn {
-  @apply px-4 py-2 rounded-lg bg-primary text-white font-medium
-         flex items-center gap-2 hover:bg-primary/90 transition-all duration-200
+  @apply px-6 py-3 rounded-xl bg-blue-500 text-white font-semibold
+         flex items-center justify-center gap-2
+         transform transition-all duration-200
+         hover:bg-blue-600 hover:-translate-y-0.5 hover:shadow-lg
          disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.history-btn {
+  @apply px-6 py-3 rounded-xl bg-indigo-500 text-white font-semibold
+         flex items-center justify-center gap-2
+         transform transition-all duration-200
+         hover:bg-indigo-600 hover:-translate-y-0.5 hover:shadow-lg;
+}
+
+.features-section {
+  @apply max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-4;
+}
+
+.feature-card {
+  @apply bg-white p-6 rounded-xl shadow-lg text-center
+         transform transition-all duration-200
+         hover:-translate-y-1 hover:shadow-xl;
+}
+
+.feature-card h3 {
+  @apply text-xl font-semibold mb-2 text-gray-800;
+}
+
+.feature-card p {
+  @apply text-gray-600;
 }
 </style>

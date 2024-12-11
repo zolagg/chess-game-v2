@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import Login from './components/Login.vue';
 import Register from './components/Register.vue';
-import Home from './components/Home.vue';
 import Header from './components/Header.vue';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
@@ -29,7 +28,7 @@ const authStore = useAuthStore();
       </div>
 
       <div v-else>
-        <Home />
+        <router-view></router-view>
       </div>
     </main>
   </div>
