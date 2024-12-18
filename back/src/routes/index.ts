@@ -64,18 +64,30 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ChessColor": {
+        "dataType": "refEnum",
+        "enums": ["WHITE","BLACK"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "GameStatus": {
+        "dataType": "refEnum",
+        "enums": ["IN_PROGRESS","COMPLETED","RESIGNED"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ChessMoveOutputDTO": {
         "dataType": "refObject",
         "properties": {
             "success": {"dataType":"boolean","required":true},
             "message": {"dataType":"string","required":true},
             "board": {"dataType":"array","array":{"dataType":"array","array":{"dataType":"string"}}},
-            "currentTurn": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["WHITE"]},{"dataType":"enum","enums":["BLACK"]}]},
+            "currentTurn": {"ref":"ChessColor"},
             "isCheck": {"dataType":"boolean","required":true},
             "isCheckmate": {"dataType":"boolean","required":true},
             "isFinished": {"dataType":"boolean"},
-            "winnerColor": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["WHITE"]},{"dataType":"enum","enums":["BLACK"]}]},
-            "status": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["IN_PROGRESS"]},{"dataType":"enum","enums":["COMPLETED"]},{"dataType":"enum","enums":["RESIGNED"]}]},
+            "winnerColor": {"ref":"ChessColor"},
+            "status": {"ref":"GameStatus"},
+            "whiteCaptured": {"dataType":"array","array":{"dataType":"string"}},
+            "blackCaptured": {"dataType":"array","array":{"dataType":"string"}},
         },
         "additionalProperties": false,
     },
@@ -86,6 +98,7 @@ const models: TsoaRoute.Models = {
             "from": {"dataType":"string","required":true},
             "to": {"dataType":"string","required":true},
             "piece": {"dataType":"string","required":true},
+            "promotedPiece": {"dataType":"string"},
         },
         "additionalProperties": false,
     },

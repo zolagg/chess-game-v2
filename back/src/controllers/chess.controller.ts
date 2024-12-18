@@ -46,7 +46,7 @@ export class ChessController extends Controller {
       status: game.status,
       isFinished: game.is_finished,
       whiteCaptured: [],
-      blackCaptured: []
+      blackCaptured: [],
     };
   }
 
@@ -58,8 +58,8 @@ export class ChessController extends Controller {
   ): Promise<ChessGameStateDTO> {
     const userId = request.user.id;
     const game = await this.chessService.getGame(parseInt(gameId), userId);
-    const capturedPieces = JSON.parse(game.captured_pieces || '[]');
-    
+    const capturedPieces = JSON.parse(game.captured_pieces || "[]");
+
     return {
       gameId: game.id,
       board: JSON.parse(game.board_state),
@@ -74,7 +74,7 @@ export class ChessController extends Controller {
         .map((p: CapturedPiece) => p.piece),
       blackCaptured: capturedPieces
         .filter((p: CapturedPiece) => p.capturedBy === ChessColor.BLACK)
-        .map((p: CapturedPiece) => p.piece)
+        .map((p: CapturedPiece) => p.piece),
     };
   }
 
@@ -90,7 +90,8 @@ export class ChessController extends Controller {
       parseInt(gameId),
       userId,
       move.from,
-      move.to
+      move.to,
+      move.promotedPiece
     );
     const moves = JSON.parse(game.moves_history);
     const lastMove = moves[moves.length - 1];
@@ -158,16 +159,14 @@ export class ChessController extends Controller {
   }
 
   @Get("/history")
-  public async getGameHistory(
-    @Request() request: any
-  ): Promise<any[]> {
+  public async getGameHistory(@Request() request: any): Promise<any[]> {
     const userId = request.user.id;
     const games = await this.chessService.getGameHistory(userId);
-    return games.map(game => ({
+    return games.map((game) => ({
       id: game.id,
       status: game.status,
       createdAt: game.createdAt,
-      winner: game.winner_color
+      winner: game.winner_color,
     }));
   }
 
@@ -183,18 +182,22 @@ export class ChessController extends Controller {
       status: game.status,
       createdAt: game.createdAt,
       winner: game.winner_color,
-      moves: JSON.parse(game.moves_history)
+      moves: JSON.parse(game.moves_history),
     };
   }
 
   @Post("/reconstruct/{gameId}")
   public async reconstructBoardState(
     @Path() gameId: string,
-    @Body() body: { moves: any[] }, 
+    @Body() body: { moves: any[] },
     @Request() request: any
   ): Promise<ChessMoveOutputDTO> {
     const userId = request.user.id;
-    const game = await this.chessService.reconstructBoardState(parseInt(gameId), userId, body.moves);
+    const game = await this.chessService.reconstructBoardState(
+      parseInt(gameId),
+      userId,
+      body.moves
+    );
     const capturedPieces: CapturedPiece[] = JSON.parse(game.captured_pieces);
 
     return {
@@ -207,11 +210,11 @@ export class ChessController extends Controller {
       status: game.status,
       winnerColor: game.winner_color,
       whiteCaptured: capturedPieces
-        .filter(cp => cp.capturedBy === ChessColor.WHITE)
-        .map(cp => cp.piece),
+        .filter((cp) => cp.capturedBy === ChessColor.WHITE)
+        .map((cp) => cp.piece),
       blackCaptured: capturedPieces
-        .filter(cp => cp.capturedBy === ChessColor.BLACK)
-        .map(cp => cp.piece)
+        .filter((cp) => cp.capturedBy === ChessColor.BLACK)
+        .map((cp) => cp.piece),
     };
   }
 }

@@ -6,6 +6,7 @@ export interface ChessMoveInputDTO {
   from: string;
   to: string;
   piece: string;
+  promotedPiece?: string;
 }
 
 export interface ChessMoveOutputDTO {
