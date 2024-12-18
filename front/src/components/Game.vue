@@ -1,6 +1,12 @@
 <template>
   <div class="game-container">
     <Toast position="top-right" />
+    <GameOverDialog
+      :show="gameStore.isFinished"
+      :winner="gameStore.winnerColor"
+      @new-game="handleNewGame"
+      @go-to-history="handleGoToHistory"
+    />
     <div class="game-layout">
       <div class="game-header">
         <h2 class="game-title">Game #{{ gameId }}</h2>
@@ -64,6 +70,7 @@ import TurnIndicator from './TurnIndicator.vue';
 import MoveNavigator from './MoveNavigator.vue';
 import CapturedPieces from './CapturedPieces.vue';
 import PawnPromotionDialog from './PawnPromotionDialog.vue';
+import GameOverDialog from './GameOverDialog.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -190,6 +197,28 @@ const handlePromotion = async (promotedPiece: string) => {
     showPromotionDialog.value = false;
     pendingMove.value = null;
   }
+};
+
+const handleNewGame = async () => {
+  try {
+    const gameData = await gameStore.startNewGame();
+    if (gameData && gameData.gameId) {
+      router.push(`/game/${gameData.gameId}`);
+    } else {
+      throw new Error('Invalid game data received');
+    }
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error.message,
+      life: 3000
+    });
+  }
+};
+
+const handleGoToHistory = () => {
+  router.push('/history');
 };
 </script>
 
