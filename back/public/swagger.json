@@ -209,6 +209,9 @@
 					},
 					"piece": {
 						"type": "string"
+					},
+					"promotedPiece": {
+						"type": "string"
 					}
 				},
 				"required": [
