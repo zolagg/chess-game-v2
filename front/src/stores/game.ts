@@ -261,7 +261,7 @@ export const useGameStore = defineStore("game", {
       this.loading = true;
       try {
         console.log('Fetching game history from server...');
-        const response = await axios.get('/chess/games');
+        const response = await axios.get('/chess/history');
         console.log('Game history response:', response.data);
         
         // Transform the response to match the expected format
