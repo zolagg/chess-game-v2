@@ -2,7 +2,7 @@
   <div class="game-container">
     <Toast position="top-right" />
     <GameOverDialog
-      :show="gameStore.isFinished"
+      :show="showGameOverDialog"
       :winner="gameStore.winnerColor"
       @new-game="handleNewGame"
       @go-to-history="handleGoToHistory"
@@ -234,6 +234,10 @@ const handleNewGame = async () => {
 const handleGoToHistory = () => {
   router.push('/history');
 };
+
+const showGameOverDialog = computed(() => {
+  return gameStore.isFinished && !isNavigationEnabled.value;
+});
 </script>
 
 <style lang="postcss" scoped>
