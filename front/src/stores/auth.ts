@@ -1,19 +1,22 @@
-import { defineStore } from 'pinia';
 import axios from 'axios';
-
-interface AuthState {
-  token: string | null;
-  isAuthenticated: boolean;
-}
+import { defineStore } from 'pinia';
 
 export const useAuthStore = defineStore('auth', {
-  state: (): AuthState => ({
-    token: null,
-    isAuthenticated: false,
+  state: () => ({
+    token: localStorage.getItem('token') || null,
+    user: null,
+    loading: false,
+    error: null
   }),
-  
+
+  getters: {
+    isAuthenticated: (state) => !!state.token,
+  },
+
   actions: {
     async login(username: string, password: string) {
+      this.loading = true;
+      this.error = null;
       try {
         const response = await axios.post('/auth', {
           grant_type: 'password',
@@ -21,48 +24,28 @@ export const useAuthStore = defineStore('auth', {
           password
         });
         
-        this.token = response.data.token;
-        this.isAuthenticated = true;
+        const { token } = response.data;
+        this.token = token;
+        localStorage.setItem('token', token);
         
-        // Store token in localStorage
-        localStorage.setItem('token', response.data.token);
+        // Set the default Authorization header for all future requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
-        return true;
-      } catch (error) {
+        return response.data;
+      } catch (error: any) {
         console.error('Login failed:', error);
-        return false;
-      }
-    },
-
-    async register(username: string, password: string) {
-      try {
-        await axios.post('/users', {
-          username,
-          password: btoa(password) // Convert to base64 as required by backend
-        });
-        
-        // After registration, log the user in
-        return this.login(username, password);
-      } catch (error) {
-        console.error('Registration failed:', error);
-        return false;
+        this.error = error.response?.data?.message || 'Network error occurred';
+        throw error;
+      } finally {
+        this.loading = false;
       }
     },
 
     logout() {
       this.token = null;
-      this.isAuthenticated = false;
+      this.user = null;
       localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
-    },
-
-    initialize() {
-      const token = localStorage.getItem('token');
-      if (token) {
-        this.token = token;
-        this.isAuthenticated = true;
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      }
     }
   }
 }); 

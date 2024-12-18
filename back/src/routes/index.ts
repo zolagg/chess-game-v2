@@ -9,7 +9,7 @@ import { UserController } from './../controllers/user.controller';
 import { ChessController } from './../controllers/chess.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthenticationController } from './../controllers/authentication.controller';
-import { expressAuthentication } from './../middlewares/authentication';
+import { expressAuthentication } from '../middleware/authentication';
 // @ts-ignore - no great way to install types from subpackage
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
 

@@ -148,7 +148,9 @@ const fetchGames = async () => {
   loading.value = true;
   error.value = null;
   try {
-    await gameStore.fetchGameHistory();
+    console.log('Fetching game history...');
+    await gameStore.getGameHistory();
+    console.log('Game history loaded:', gameStore.gameHistory);
   } catch (error: any) {
     error.value = error.response?.data?.message || 'Failed to load game history';
     toast.add({

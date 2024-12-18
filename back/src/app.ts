@@ -4,7 +4,8 @@ import swaggerUi from "swagger-ui-express";
 import cors from 'cors';
 
 import { RegisterRoutes } from "./routes/index"; // tsoa va générer ce fichier
-import errorHandler from "./middlewares/errorHandler";
+import errorHandler from "./middleware/errorHandler";
+import { corsMiddleware } from './middleware/cors';
 
 const PORT = process.env.PORT || 8000;
 
@@ -23,10 +24,7 @@ app.use(
   })
 );
 
-app.use(cors({
-  origin: 'http://localhost:5173', // Your Vue.js dev server
-  credentials: true
-}));
+app.use(corsMiddleware);
 
 RegisterRoutes(app);
 

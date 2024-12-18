@@ -1,7 +1,5 @@
 import { defineStore } from "pinia";
 import axios from "../config/axios";
-import { ref } from "vue";
-import { useRouter } from "vue-router";
 
 interface GameState {
   gameId: number | null;
@@ -259,5 +257,29 @@ export const useGameStore = defineStore("game", {
         throw error;
       }
     },
+    async getGameHistory() {
+      this.loading = true;
+      try {
+        console.log('Fetching game history from server...');
+        const response = await axios.get('/chess/games');
+        console.log('Game history response:', response.data);
+        
+        // Transform the response to match the expected format
+        this.gameHistory = response.data.map((game: any) => ({
+          id: game.id,
+          status: game.status,
+          createdAt: game.created_at,
+          winner: game.winner_color ? `${game.winner_color}` : undefined,
+          captured_pieces: game.captured_pieces ? JSON.parse(game.captured_pieces) : []
+        }));
+        
+        return this.gameHistory;
+      } catch (error) {
+        console.error('Game history fetch error:', error);
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    }
   },
 });
