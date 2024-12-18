@@ -20,6 +20,10 @@
             :currentTurn="gameStore.currentTurn" 
             :isCheck="gameStore.isCheck" 
           />
+          <CapturedPieces
+            :whiteCaptured="gameStore.whiteCaptured"
+            :blackCaptured="gameStore.blackCaptured"
+          />
           <Chessboard 
             :board="gameStore.board" 
             @square-clicked="onSquareClicked" 
@@ -53,6 +57,7 @@ import Toast from 'primevue/toast';
 import MoveHistory from './MoveHistory.vue';
 import TurnIndicator from './TurnIndicator.vue';
 import MoveNavigator from './MoveNavigator.vue';
+import CapturedPieces from './CapturedPieces.vue';
 
 const route = useRoute();
 const router = useRouter();

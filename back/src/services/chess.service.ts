@@ -1,4 +1,4 @@
-import { ChessGame, ChessColor, GameStatus } from "../models/chess.model";
+import { ChessGame, ChessColor, GameStatus, CapturedPiece } from "../models/chess.model";
 import { User } from "../models/user.model";
 import { notFound } from "../error/NotFoundError";
 import { Pawn } from "../chess/pieces/Pawn";
@@ -40,6 +40,7 @@ export class ChessService {
         current_turn: ChessColor.WHITE,
         board_state: JSON.stringify(this.INITIAL_BOARD_STATE),
         moves_history: "[]",
+        captured_pieces: "[]",
         is_finished: false,
         status: GameStatus.IN_PROGRESS
       };
@@ -192,12 +193,23 @@ export class ChessService {
     }
 
     // Stocker l'information d'échec et mat dans l'historique
+    const capturedPieces = JSON.parse(game.captured_pieces);
+    if (targetPiece) {
+      if (piece.startsWith('W')) {
+        capturedPieces.push({ piece: targetPiece, capturedBy: 'WHITE' });
+      } else {
+        capturedPieces.push({ piece: targetPiece, capturedBy: 'BLACK' });
+      }
+    }
+    game.captured_pieces = JSON.stringify(capturedPieces);
+
     game.moves_history = JSON.stringify([
       ...movesHistory,
       {
         from,
         to,
         piece,
+        capturedPiece: targetPiece,
         timestamp: new Date(),
         isCheck,
         isCheckmate,
@@ -545,7 +557,7 @@ export class ChessService {
               tempBoard[toRow][toCol] = tempPiece;
               tempBoard[fromRow][fromCol] = "";
 
-              // Si ce mouvement sort de l'échec, ce n'est pas un échec et mat
+              // Si ce mouvement sort de l'��chec, ce n'est pas un échec et mat
               if (!this.isKingInCheck(tempBoard, color)) {
                 return false;
               }
@@ -615,6 +627,7 @@ export class ChessService {
     
     // Start with initial board state
     let boardState = JSON.parse(JSON.stringify(this.INITIAL_BOARD_STATE));
+    let capturedPieces: CapturedPiece[] = [];
     
     // Apply each move to reconstruct the board
     for (const move of moves) {
@@ -632,18 +645,50 @@ export class ChessService {
         8 - parseInt(toRank)
       ];
 
+      // Check if there's a piece to capture
+      const targetPiece = boardState[toPosition[1]][toPosition[0]];
+      if (targetPiece) {
+        capturedPieces.push({
+          piece: targetPiece,
+          capturedBy: move.piece.startsWith('W') ? ChessColor.WHITE : ChessColor.BLACK
+        });
+      }
+
       boardState[toPosition[1]][toPosition[0]] = move.piece;
       boardState[fromPosition[1]][fromPosition[0]] = "";
     }
 
-    // Update the game's board state but don't save it
+    // Update the game's board state and captured pieces
     game.board_state = JSON.stringify(boardState);
+    game.captured_pieces = JSON.stringify(capturedPieces);
     
     return game;
   }
 
   public getInitialBoardState(): string[][] {
     return JSON.parse(JSON.stringify(this.INITIAL_BOARD_STATE));
+  }
+
+  public async getGameState(gameId: number, userId: number): Promise<any> {
+    const game = await this.getGame(gameId, userId);
+    const capturedPieces: CapturedPiece[] = JSON.parse(game.captured_pieces);
+    
+    return {
+      gameId: game.id,
+      board: JSON.parse(game.board_state),
+      currentTurn: game.current_turn,
+      isCheck: false, // You might want to compute this
+      isCheckmate: false, // You might want to compute this
+      moves: JSON.parse(game.moves_history),
+      status: game.status,
+      isFinished: game.is_finished,
+      whiteCaptured: capturedPieces
+        .filter((cp: CapturedPiece) => cp.capturedBy === ChessColor.WHITE)
+        .map((cp: CapturedPiece) => cp.piece),
+      blackCaptured: capturedPieces
+        .filter((cp: CapturedPiece) => cp.capturedBy === ChessColor.BLACK)
+        .map((cp: CapturedPiece) => cp.piece),
+    };
   }
 }
 

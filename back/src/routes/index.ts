@@ -58,6 +58,8 @@ const models: TsoaRoute.Models = {
             "moves": {"dataType":"array","array":{"dataType":"any"},"required":true},
             "status": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["IN_PROGRESS"]},{"dataType":"enum","enums":["COMPLETED"]},{"dataType":"enum","enums":["RESIGNED"]}],"required":true},
             "isFinished": {"dataType":"boolean","required":true},
+            "whiteCaptured": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "blackCaptured": {"dataType":"array","array":{"dataType":"string"},"required":true},
         },
         "additionalProperties": false,
     },

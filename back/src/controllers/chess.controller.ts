@@ -15,6 +15,8 @@ import {
   ChessGameStateDTO,
 } from "../dto/chess.dto";
 import { ChessService } from "../services/chess.service";
+import { ChessColor } from "../models/chess.model";
+import { CapturedPiece } from "../models/chess.model";
 
 @Route("chess")
 @Tags("Chess")
@@ -42,7 +44,9 @@ export class ChessController extends Controller {
       isCheckmate: false,
       moves: JSON.parse(game.moves_history),
       status: game.status,
-      isFinished: game.is_finished
+      isFinished: game.is_finished,
+      whiteCaptured: [],
+      blackCaptured: []
     };
   }
 
@@ -54,6 +58,8 @@ export class ChessController extends Controller {
   ): Promise<ChessGameStateDTO> {
     const userId = request.user.id;
     const game = await this.chessService.getGame(parseInt(gameId), userId);
+    const capturedPieces = JSON.parse(game.captured_pieces || '[]');
+    
     return {
       gameId: game.id,
       board: JSON.parse(game.board_state),
@@ -62,7 +68,13 @@ export class ChessController extends Controller {
       isCheckmate: false,
       moves: JSON.parse(game.moves_history),
       status: game.status,
-      isFinished: game.is_finished
+      isFinished: game.is_finished,
+      whiteCaptured: capturedPieces
+        .filter((p: CapturedPiece) => p.capturedBy === ChessColor.WHITE)
+        .map((p: CapturedPiece) => p.piece),
+      blackCaptured: capturedPieces
+        .filter((p: CapturedPiece) => p.capturedBy === ChessColor.BLACK)
+        .map((p: CapturedPiece) => p.piece)
     };
   }
 
@@ -183,6 +195,7 @@ export class ChessController extends Controller {
   ): Promise<ChessMoveOutputDTO> {
     const userId = request.user.id;
     const game = await this.chessService.reconstructBoardState(parseInt(gameId), userId, body.moves);
+    const capturedPieces: CapturedPiece[] = JSON.parse(game.captured_pieces);
 
     return {
       success: true,
@@ -192,7 +205,13 @@ export class ChessController extends Controller {
       isCheckmate: false,
       isFinished: game.is_finished,
       status: game.status,
-      winnerColor: game.winner_color
+      winnerColor: game.winner_color,
+      whiteCaptured: capturedPieces
+        .filter(cp => cp.capturedBy === ChessColor.WHITE)
+        .map(cp => cp.piece),
+      blackCaptured: capturedPieces
+        .filter(cp => cp.capturedBy === ChessColor.BLACK)
+        .map(cp => cp.piece)
     };
   }
 }

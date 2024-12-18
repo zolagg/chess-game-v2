@@ -98,6 +98,18 @@
 					},
 					"isFinished": {
 						"type": "boolean"
+					},
+					"whiteCaptured": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"blackCaptured": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"required": [
@@ -108,10 +120,27 @@
 					"isCheckmate",
 					"moves",
 					"status",
-					"isFinished"
+					"isFinished",
+					"whiteCaptured",
+					"blackCaptured"
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"ChessColor": {
+				"enum": [
+					"WHITE",
+					"BLACK"
+				],
+				"type": "string"
+			},
+			"GameStatus": {
+				"enum": [
+					"IN_PROGRESS",
+					"COMPLETED",
+					"RESIGNED"
+				],
+				"type": "string"
 			},
 			"ChessMoveOutputDTO": {
 				"properties": {
@@ -131,11 +160,7 @@
 						"type": "array"
 					},
 					"currentTurn": {
-						"type": "string",
-						"enum": [
-							"WHITE",
-							"BLACK"
-						]
+						"$ref": "#/components/schemas/ChessColor"
 					},
 					"isCheck": {
 						"type": "boolean"
@@ -147,19 +172,22 @@
 						"type": "boolean"
 					},
 					"winnerColor": {
-						"type": "string",
-						"enum": [
-							"WHITE",
-							"BLACK"
-						]
+						"$ref": "#/components/schemas/ChessColor"
 					},
 					"status": {
-						"type": "string",
-						"enum": [
-							"IN_PROGRESS",
-							"COMPLETED",
-							"RESIGNED"
-						]
+						"$ref": "#/components/schemas/GameStatus"
+					},
+					"whiteCaptured": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"blackCaptured": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"required": [

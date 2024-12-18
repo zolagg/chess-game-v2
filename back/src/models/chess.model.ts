@@ -31,6 +31,12 @@ export interface ChessGameAttributes {
   is_finished: boolean;
   winner_color?: ChessColor;
   status: GameStatus;
+  captured_pieces: string;
+}
+
+export interface CapturedPiece {
+  piece: string;
+  capturedBy: ChessColor;
 }
 
 export class ChessGame
@@ -45,6 +51,7 @@ export class ChessGame
   public is_finished!: boolean;
   public winner_color?: ChessColor;
   public status!: GameStatus;
+  public captured_pieces!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -91,6 +98,11 @@ ChessGame.init(
       type: DataTypes.ENUM(...Object.values(GameStatus)),
       allowNull: false,
       defaultValue: GameStatus.IN_PROGRESS,
+    },
+    captured_pieces: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: "[]",
     },
   },
   {

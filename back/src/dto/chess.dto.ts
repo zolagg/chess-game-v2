@@ -1,3 +1,7 @@
+import { ChessColor } from "../models/chess.model";
+
+import { GameStatus } from "../models/chess.model";
+
 export interface ChessMoveInputDTO {
   from: string;
   to: string;
@@ -8,12 +12,14 @@ export interface ChessMoveOutputDTO {
   success: boolean;
   message: string;
   board?: string[][];
-  currentTurn?: "WHITE" | "BLACK";
+  currentTurn?: ChessColor;
   isCheck: boolean;
   isCheckmate: boolean;
   isFinished?: boolean;
-  winnerColor?: "WHITE" | "BLACK";
-  status?: "IN_PROGRESS" | "COMPLETED" | "RESIGNED";
+  winnerColor?: ChessColor;
+  status?: GameStatus;
+  whiteCaptured?: string[];
+  blackCaptured?: string[];
 }
 
 export interface ChessGameStateDTO {
@@ -25,4 +31,6 @@ export interface ChessGameStateDTO {
   moves: any[];
   status: "IN_PROGRESS" | "COMPLETED" | "RESIGNED";
   isFinished: boolean;
+  whiteCaptured: string[];
+  blackCaptured: string[];
 }

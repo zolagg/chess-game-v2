@@ -21,6 +21,8 @@ interface GameState {
     winner?: string;
   }>;
   status: 'IN_PROGRESS' | 'COMPLETED' | 'RESIGNED';
+  whiteCaptured: string[];
+  blackCaptured: string[];
 }
 
 export const useGameStore = defineStore("game", {
@@ -39,6 +41,8 @@ export const useGameStore = defineStore("game", {
     winnerColor: null,
     gameHistory: [],
     status: 'IN_PROGRESS' as 'IN_PROGRESS' | 'COMPLETED' | 'RESIGNED',
+    whiteCaptured: [],
+    blackCaptured: [],
   }),
 
   actions: {
@@ -91,6 +95,21 @@ export const useGameStore = defineStore("game", {
         });
 
         if (response.data.board) {
+          // Get the target piece before updating the board
+          const [toFile, toRank] = to.split("");
+          const toRow = 8 - parseInt(toRank);
+          const toCol = toFile.charCodeAt(0) - 97;
+          const targetPiece = this.board[toRow][toCol];
+          
+          // If there was a piece at the target square, add it to captured pieces
+          if (targetPiece) {
+            if (piece.startsWith('W')) {
+              this.whiteCaptured.push(targetPiece);
+            } else {
+              this.blackCaptured.push(targetPiece);
+            }
+          }
+
           this.board = response.data.board;
           
           if (response.data.currentTurn) {
@@ -147,7 +166,7 @@ export const useGameStore = defineStore("game", {
         this.loading = false;
       }
     },
-    async getGameState(gameId: string) {
+        async getGameState(gameId: string) {
       this.loading = true;
       this.error = null;
       try {
@@ -162,6 +181,8 @@ export const useGameStore = defineStore("game", {
         this.isFinished = response.data.status === 'COMPLETED' || response.data.status === 'RESIGNED';
         this.winnerColor = response.data.winner_color || null;
         this.status = response.data.status;
+        this.whiteCaptured = response.data.whiteCaptured || [];
+        this.blackCaptured = response.data.blackCaptured || [];
         return response.data;
       } catch (error: any) {
         console.error("Get game state error:", error);
@@ -175,32 +196,7 @@ export const useGameStore = defineStore("game", {
         this.loading = false;
       }
     },
-    async fetchGameHistory() {
-      this.loading = true;
-      this.error = null;
-      try {
-        const response = await axios.get('/chess/history');
-        if (response.data) {
-          this.gameHistory = response.data.map((game: any) => ({
-            id: game.id,
-            status: game.status,
-            createdAt: game.createdAt,
-            winner: game.winner
-          }));
-        }
-        return this.gameHistory;
-      } catch (error: any) {
-        console.error('Error fetching game history:', error);
-        if (error.code === 'ERR_NETWORK') {
-          this.error = 'Unable to connect to the game server. Please check your connection.';
-        } else {
-          this.error = error.response?.data?.message || 'Failed to fetch game history';
-        }
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+
     async resignGame(gameId: string) {
       this.loading = true;
       try {
@@ -239,6 +235,8 @@ export const useGameStore = defineStore("game", {
         
         if (response.data.board) {
           this.board = response.data.board;
+          this.whiteCaptured = response.data.whiteCaptured || [];
+          this.blackCaptured = response.data.blackCaptured || [];
         }
       } catch (error: any) {
         console.error("Error reconstructing board state:", error);
