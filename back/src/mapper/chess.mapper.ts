@@ -7,6 +7,11 @@ export class ChessMapper {
       currentTurn: gameState.currentTurn,
       isCheck: gameState.isCheck,
       isCheckmate: gameState.isCheckmate,
+      gameId: gameState.gameId,
+      status: gameState.status,
+      isFinished: gameState.isFinished,
+      whiteCaptured: gameState.whiteCaptured,
+      blackCaptured: gameState.blackCaptured,
       moves: gameState.moves
     };
   }
