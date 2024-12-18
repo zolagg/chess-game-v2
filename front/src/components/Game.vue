@@ -76,12 +76,21 @@ const onSquareClicked = async ({
   piece: string;
 }) => {
   if (!gameId) return;
-
   try {
-    if (from && to) {
-      const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
-      const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
-      await gameStore.makeMove(fromSquare, toSquare, piece);
+    const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
+    const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
+    
+    // Check if there's a piece at the target square before making the move
+    const targetPiece = gameStore.board[to.row][to.col];
+    
+    await gameStore.makeMove(fromSquare, toSquare, piece);
+    
+    // If there was a piece at the target square, it was captured
+    if (targetPiece && targetPiece !== piece) {
+      const lastMove = gameStore.moves[gameStore.moves.length - 1];
+      if (lastMove) {
+        lastMove.capturedPiece = targetPiece;
+      }
     }
   } catch (error: any) {
     toast.add({
@@ -156,12 +165,19 @@ const handleMoveNavigation = async (index: number) => {
 watch(() => gameStore.moves, (newMoves) => {
   if (newMoves.length > 0) {
     const lastMove = newMoves[newMoves.length - 1];
-    const targetSquare = gameStore.board[parseInt(lastMove.to[1])][lastMove.to.charCodeAt(0) - 97];
-    if (targetSquare && targetSquare !== lastMove.piece) {
-      lastMove.capturedPiece = targetSquare;
+    const prevBoard = gameStore.board;
+    if (prevBoard) {
+      const [row, col] = [
+        8 - parseInt(lastMove.to[1]), 
+        lastMove.to.charCodeAt(0) - 97
+      ];
+      const targetSquare = prevBoard[row][col];
+      if (targetSquare && targetSquare !== lastMove.piece) {
+        lastMove.capturedPiece = targetSquare;
+      }
     }
   }
-}, { deep: true });
+}, { deep: true, immediate: true });
 </script>
 
 <style lang="postcss" scoped>

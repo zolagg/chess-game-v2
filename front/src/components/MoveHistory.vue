@@ -1,7 +1,7 @@
 <template>
   <div class="move-history">
     <h3 class="text-lg font-semibold mb-4">Move History</h3>
-    <div class="moves-list">
+    <div class="moves-list" ref="movesList">
       <div v-for="(move, index) in moves" :key="index" class="move-item">
         <span class="move-number">{{ Math.floor(index / 2) + 1 }}.</span>
         <i :class="getPieceIcon(move.piece)"></i>
@@ -16,6 +16,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, nextTick } from 'vue';
+
 interface Move {
   from: string;
   to: string;
@@ -27,6 +29,16 @@ interface Move {
 const props = defineProps<{
   moves: Move[];
 }>();
+
+const movesList = ref<HTMLElement | null>(null);
+
+watch(() => props.moves.length, () => {
+  nextTick(() => {
+    if (movesList.value) {
+      movesList.value.scrollTop = movesList.value.scrollHeight;
+    }
+  });
+});
 
 const getPieceIcon = (piece: string) => {
   const icons: Record<string, string> = {
