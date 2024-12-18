@@ -1,5 +1,5 @@
 import { Route, Controller, Post, Body } from "tsoa";
-import { AuthenticationInputDTO } from "../dto/authentication.dto";
+import { AuthenticationInputDTO, RegistrationInputDTO } from "../dto/authentication.dto";
 import { authService } from "../services/authentication.service";
 
 @Route("auth")
@@ -13,7 +13,13 @@ export class AuthenticationController extends Controller {
       throw error;
     }
     const token = await authService.authenticate(username, password);
-
     return { token };
+  }
+
+  @Post("/register")
+  public async register(@Body() body: RegistrationInputDTO) {
+    const { username, password } = body;
+    await authService.register(username, password);
+    return { success: true, message: "Registration successful" };
   }
 }

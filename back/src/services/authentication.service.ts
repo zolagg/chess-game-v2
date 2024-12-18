@@ -1,42 +1,52 @@
-import { User } from "../models/user.model"; // Modèle Sequelize
-import jwt from "jsonwebtoken"; // Pour générer le JWT
-import { Buffer } from "buffer"; // Pour décoder Base64
-import { notFound } from "../error/NotFoundError";
+import { User } from '../models/user.model';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { config } from '../config';
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key"; // Clé secrète pour signer le token
+class AuthenticationService {
+  async register(username: string, password: string) {
+    // Check if username already exists
+    const existingUser = await User.findOne({
+      where: { username }
+    });
 
-export class AuthenticationService {
-  public async authenticate(
-    username: string,
-    password: string
-  ): Promise<string> {
-    // Recherche l'utilisateur dans la base de données
-    const user = await User.findOne({ where: { username } });
+    if (existingUser) {
+      throw new Error('Username already exists');
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new user
+    const user = await User.create({
+      username,
+      password: hashedPassword
+    });
+
+    return user;
+  }
+
+  async authenticate(username: string, password: string) {
+    const user = await User.findOne({
+      where: { username }
+    });
 
     if (!user) {
-      throw notFound("User");
+      throw new Error('Invalid credentials');
     }
 
-    // Encode the incoming password to compare with stored password
-    const encodedPassword = Buffer.from(password).toString('base64');
-
-    // Compare encoded passwords
-    if (encodedPassword === user.password) {
-      // Si l'utilisateur est authentifié, on génère un JWT
-      const token = jwt.sign(
-        {
-          username: user.username,
-          id: user.id,
-        },
-        JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-      return token;
-    } else {
-      let error = new Error("Wrong password");
-      (error as any).status = 403;
-      throw error;
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      throw new Error('Invalid credentials');
     }
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      config.jwtSecret,
+      { expiresIn: '24h' }
+    );
+
+    return token;
   }
 }
 

@@ -241,6 +241,22 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"RegistrationInputDTO": {
+				"properties": {
+					"username": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"username",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {
@@ -737,9 +753,7 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"token": {
-											"type": "string"
-										}
+										"token": {}
 									},
 									"required": [
 										"token"
@@ -758,6 +772,47 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/AuthenticationInputDTO"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/register": {
+			"post": {
+				"operationId": "Register",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										},
+										"success": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"message",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RegistrationInputDTO"
 							}
 						}
 					}
