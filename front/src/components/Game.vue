@@ -82,6 +82,7 @@ const onSquareClicked = async ({
   piece: string;
 }) => {
   if (!gameId) return;
+  
   try {
     const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
     const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
@@ -89,29 +90,26 @@ const onSquareClicked = async ({
     // Check if there's a piece at the target square before making the move
     const targetPiece = gameStore.board[to.row][to.col];
     
+    // Check if it's a pawn promotion before making the move
+    const isPawnPromotion = piece.endsWith('P') && (to.row === 0 || to.row === 7);
+    
+    if (isPawnPromotion) {
+      showPromotionDialog.value = true;
+      pendingMove.value = { fromSquare, toSquare, piece };
+      return;
+    }
+
+    // Make the move
     await gameStore.makeMove(fromSquare, toSquare, piece);
     
-    // If there was a piece at the target square, it was captured
+    // Update move history with captured piece if any
     if (targetPiece && targetPiece !== piece) {
       const lastMove = gameStore.moves[gameStore.moves.length - 1];
       if (lastMove) {
         lastMove.capturedPiece = targetPiece;
       }
     }
-
-  const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
-  const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
-  
-  const isPawnPromotion = piece.endsWith('P') && (to.row === 0 || to.row === 7);
-  
-  if (isPawnPromotion) {
-    showPromotionDialog.value = true;
-    pendingMove.value = { fromSquare, toSquare, piece };
-    return;
-  }
-
-  try {
-    await gameStore.makeMove(fromSquare, toSquare, piece);
+    
   } catch (error: any) {
     toast.add({
       severity: 'error',
@@ -182,22 +180,6 @@ const handleMoveNavigation = async (index: number) => {
   await gameStore.reconstructBoardState(moveHistory);
 };
 
-watch(() => gameStore.moves, (newMoves) => {
-  if (newMoves.length > 0) {
-    const lastMove = newMoves[newMoves.length - 1];
-    const prevBoard = gameStore.board;
-    if (prevBoard) {
-      const [row, col] = [
-        8 - parseInt(lastMove.to[1]), 
-        lastMove.to.charCodeAt(0) - 97
-      ];
-      const targetSquare = prevBoard[row][col];
-      if (targetSquare && targetSquare !== lastMove.piece) {
-        lastMove.capturedPiece = targetSquare;
-      }
-    }
-  }
-}, { deep: true, immediate: true });
 const showPromotionDialog = ref(false);
 const pendingMove = ref<any>(null);
 
