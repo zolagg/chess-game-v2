@@ -1,5 +1,6 @@
 import * as express from "express";
 import * as jwt from "jsonwebtoken";
+import { config } from '../config';
 
 export function expressAuthentication(
   request: express.Request,
@@ -18,13 +19,12 @@ export function expressAuthentication(
       }
       jwt.verify(
         token,
-        "your_jwt_secret_key",
+        config.jwtSecret,
         function (err: any, decoded: any) {
           if (err) {
             reject(err);
           } else {
             if (scopes !== undefined) {
-              // Check if JWT contains all required scopes
               for (let scope of scopes) {
                 if (!decoded.scopes.includes(scope)) {
                   reject(new Error("JWT does not contain required scope."));
