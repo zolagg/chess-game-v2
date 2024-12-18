@@ -6,6 +6,10 @@
         <span class="move-number">{{ Math.floor(index / 2) + 1 }}.</span>
         <i :class="getPieceIcon(move.piece)"></i>
         <span class="coordinates">{{ move.from }} → {{ move.to }}</span>
+        <div v-if="move.capturedPiece" class="capture-indicator">
+          <span class="captures">captures</span>
+          <i :class="getPieceIcon(move.capturedPiece)"></i>
+        </div>
       </div>
     </div>
   </div>
@@ -17,6 +21,7 @@ interface Move {
   to: string;
   piece: string;
   timestamp: Date;
+  capturedPiece?: string;
 }
 
 const props = defineProps<{
@@ -61,6 +66,14 @@ const getPieceIcon = (piece: string) => {
 
 .coordinates {
   @apply font-mono text-gray-700;
+}
+
+.capture-indicator {
+  @apply flex items-center gap-2;
+}
+
+.captures {
+  @apply text-red-500 text-xs font-medium;
 }
 
 .white-piece {

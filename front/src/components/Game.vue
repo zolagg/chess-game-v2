@@ -152,6 +152,16 @@ const handleMoveNavigation = async (index: number) => {
   const moveHistory = gameStore.moves.slice(0, index + 1);
   await gameStore.reconstructBoardState(moveHistory);
 };
+
+watch(() => gameStore.moves, (newMoves) => {
+  if (newMoves.length > 0) {
+    const lastMove = newMoves[newMoves.length - 1];
+    const targetSquare = gameStore.board[parseInt(lastMove.to[1])][lastMove.to.charCodeAt(0) - 97];
+    if (targetSquare && targetSquare !== lastMove.piece) {
+      lastMove.capturedPiece = targetSquare;
+    }
+  }
+}, { deep: true });
 </script>
 
 <style lang="postcss" scoped>
