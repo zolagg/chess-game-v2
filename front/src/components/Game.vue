@@ -44,6 +44,11 @@
         </div>
       </div>
     </div>
+    <PawnPromotionDialog
+      :show="showPromotionDialog"
+      :color="gameStore.currentTurn"
+      @select="handlePromotion"
+    />
   </div>
 </template>
 
@@ -58,6 +63,7 @@ import MoveHistory from './MoveHistory.vue';
 import TurnIndicator from './TurnIndicator.vue';
 import MoveNavigator from './MoveNavigator.vue';
 import CapturedPieces from './CapturedPieces.vue';
+import PawnPromotionDialog from './PawnPromotionDialog.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -92,6 +98,20 @@ const onSquareClicked = async ({
         lastMove.capturedPiece = targetPiece;
       }
     }
+
+  const fromSquare = `${String.fromCharCode(97 + from.col)}${8 - from.row}`;
+  const toSquare = `${String.fromCharCode(97 + to.col)}${8 - to.row}`;
+  
+  const isPawnPromotion = piece.endsWith('P') && (to.row === 0 || to.row === 7);
+  
+  if (isPawnPromotion) {
+    showPromotionDialog.value = true;
+    pendingMove.value = { fromSquare, toSquare, piece };
+    return;
+  }
+
+  try {
+    await gameStore.makeMove(fromSquare, toSquare, piece);
   } catch (error: any) {
     toast.add({
       severity: 'error',
@@ -178,6 +198,31 @@ watch(() => gameStore.moves, (newMoves) => {
     }
   }
 }, { deep: true, immediate: true });
+const showPromotionDialog = ref(false);
+const pendingMove = ref<any>(null);
+
+const handlePromotion = async (promotedPiece: string) => {
+  if (!pendingMove.value) return;
+  
+  try {
+    await gameStore.makeMove(
+      pendingMove.value.fromSquare,
+      pendingMove.value.toSquare,
+      pendingMove.value.piece,
+      promotedPiece
+    );
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error.message,
+      life: 3000
+    });
+  } finally {
+    showPromotionDialog.value = false;
+    pendingMove.value = null;
+  }
+};
 </script>
 
 <style lang="postcss" scoped>
