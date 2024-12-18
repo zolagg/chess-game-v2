@@ -6,7 +6,7 @@
         <span v-for="(piece, index) in whiteCaptured" 
               :key="index" 
               class="piece">
-          {{ getPieceSymbol(piece) }}
+          <i :class="getPieceIcon(piece)"></i>
         </span>
       </div>
     </div>
@@ -16,7 +16,7 @@
         <span v-for="(piece, index) in blackCaptured" 
               :key="index" 
               class="piece">
-          {{ getPieceSymbol(piece) }}
+          <i :class="getPieceIcon(piece)"></i>
         </span>
       </div>
     </div>
@@ -29,16 +29,22 @@ const props = defineProps<{
   blackCaptured: string[];
 }>();
 
-const getPieceSymbol = (piece: string) => {
-  const symbols: Record<string, string> = {
-    'WP': '♙', 'BP': '♟',
-    'WR': '♖', 'BR': '♜',
-    'WN': '♘', 'BN': '♞',
-    'WB': '♗', 'BB': '♝',
-    'WQ': '♕', 'BQ': '♛',
-    'WK': '♔', 'BK': '♚'
+const getPieceIcon = (piece: string) => {
+  const icons: Record<string, string> = {
+    'WP': 'fas fa-chess-pawn fa-lg white-piece',
+    'BP': 'fas fa-chess-pawn fa-lg',
+    'WR': 'fas fa-chess-rook fa-lg white-piece',
+    'BR': 'fas fa-chess-rook fa-lg',
+    'WN': 'fas fa-chess-knight fa-lg white-piece',
+    'BN': 'fas fa-chess-knight fa-lg',
+    'WB': 'fas fa-chess-bishop fa-lg white-piece',
+    'BB': 'fas fa-chess-bishop fa-lg',
+    'WQ': 'fas fa-chess-queen fa-lg white-piece',
+    'BQ': 'fas fa-chess-queen fa-lg',
+    'WK': 'fas fa-chess-king fa-lg white-piece',
+    'BK': 'fas fa-chess-king fa-lg'
   };
-  return symbols[piece] || piece;
+  return icons[piece] || piece;
 };
 </script>
 
@@ -56,18 +62,21 @@ const getPieceSymbol = (piece: string) => {
 }
 
 .pieces {
-  @apply flex gap-1;
+  @apply flex gap-2;
 }
 
 .piece {
-  @apply text-base;
+  @apply flex items-center justify-center;
 }
 
-.white .piece {
-  @apply text-gray-700;
+.piece i {
+  @apply transform transition-all duration-200 hover:scale-110;
 }
 
-.black .piece {
-  @apply text-gray-900;
+.white-piece {
+  @apply text-white drop-shadow-lg;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  -webkit-text-stroke: 1px #2c3e50;
+  text-stroke: 1px #2c3e50;
 }
 </style> 

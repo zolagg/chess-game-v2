@@ -4,7 +4,7 @@
     <div class="moves-list">
       <div v-for="(move, index) in moves" :key="index" class="move-item">
         <span class="move-number">{{ Math.floor(index / 2) + 1 }}.</span>
-        <span class="piece">{{ getPieceSymbol(move.piece) }}</span>
+        <i :class="getPieceIcon(move.piece)"></i>
         <span class="coordinates">{{ move.from }} → {{ move.to }}</span>
       </div>
     </div>
@@ -23,16 +23,22 @@ const props = defineProps<{
   moves: Move[];
 }>();
 
-const getPieceSymbol = (piece: string) => {
-  const symbols: Record<string, string> = {
-    'WP': '♙', 'BP': '♟',
-    'WR': '♖', 'BR': '♜',
-    'WN': '♘', 'BN': '♞',
-    'WB': '♗', 'BB': '♝',
-    'WQ': '♕', 'BQ': '♛',
-    'WK': '♔', 'BK': '♚'
+const getPieceIcon = (piece: string) => {
+  const icons: Record<string, string> = {
+    'WP': 'fas fa-chess-pawn fa-lg white-piece',
+    'BP': 'fas fa-chess-pawn fa-lg',
+    'WR': 'fas fa-chess-rook fa-lg white-piece',
+    'BR': 'fas fa-chess-rook fa-lg',
+    'WN': 'fas fa-chess-knight fa-lg white-piece',
+    'BN': 'fas fa-chess-knight fa-lg',
+    'WB': 'fas fa-chess-bishop fa-lg white-piece',
+    'BB': 'fas fa-chess-bishop fa-lg',
+    'WQ': 'fas fa-chess-queen fa-lg white-piece',
+    'BQ': 'fas fa-chess-queen fa-lg',
+    'WK': 'fas fa-chess-king fa-lg white-piece',
+    'BK': 'fas fa-chess-king fa-lg'
   };
-  return symbols[piece] || piece;
+  return icons[piece] || piece;
 };
 </script>
 
@@ -46,18 +52,21 @@ const getPieceSymbol = (piece: string) => {
 }
 
 .move-item {
-  @apply flex items-center gap-2 text-sm;
+  @apply flex items-center gap-3 text-sm hover:bg-gray-50 p-2 rounded-lg transition-colors;
 }
 
 .move-number {
   @apply text-gray-500 w-8;
 }
 
-.piece {
-  @apply text-lg;
+.coordinates {
+  @apply font-mono text-gray-700;
 }
 
-.coordinates {
-  @apply font-mono;
+.white-piece {
+  @apply text-white drop-shadow-lg;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  -webkit-text-stroke: 1px #2c3e50;
+  text-stroke: 1px #2c3e50;
 }
 </style> 
