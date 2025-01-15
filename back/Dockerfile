@@ -13,7 +13,7 @@ COPY . .
 RUN npm run generate
 RUN npm run build
 
-FROM node:18-slim
+FROM node
 
 ENV NODE_ENV production
 USER node
@@ -26,8 +26,7 @@ COPY package*.json ./
 
 RUN npm ci --omit=dev
 
-# Copy swagger-generated files and build
-COPY --from=builder /usr/src/app/public ./public
+
 COPY --from=builder /usr/src/app/build ./build
 
 EXPOSE 8000
