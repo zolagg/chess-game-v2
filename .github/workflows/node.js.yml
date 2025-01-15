@@ -26,21 +26,10 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-<<<<<<< HEAD
-    - run: cd front/
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: cd ../back/
-    - run: npm ci
-    - run: npm run build --if-present
-=======
-    - run: npm cd front/
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm cd ../back/
-    - run: npm ci
-    - run: npm run build --if-present
-
->>>>>>> 9a8664dea5c5e5b5d03f64100adc4084dcf1d8b8
+        cache-dependency-path: "back/package-lock.json"
+    - name Install and build
+      working-directory; ./back
+      run: |
+        npm ci
+        npm run generate
+        npm build --if-present
