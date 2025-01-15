@@ -1,4 +1,4 @@
-FROM node as builder
+FROM node:18 as builder
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -13,7 +13,7 @@ COPY . .
 RUN npm run generate
 RUN npm run build
 
-FROM node:slim
+FROM node:18-slim
 
 ENV NODE_ENV production
 USER node
@@ -24,8 +24,10 @@ WORKDIR /usr/src/app
 # Install app dependencies
 COPY package*.json ./
 
-RUN npm ci --production
+RUN npm ci --omit=dev
 
+# Copy swagger-generated files and build
+COPY --from=builder /usr/src/app/public ./public
 COPY --from=builder /usr/src/app/build ./build
 
 EXPOSE 8000
