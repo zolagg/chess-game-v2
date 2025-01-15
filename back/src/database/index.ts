@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize, DataTypes } from 'sequelize';
 
 export const db = new Sequelize({
   dialect: 'sqlite',
@@ -9,17 +9,17 @@ export const db = new Sequelize({
 // Define User model
 export const User = db.define('User', {
   id: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
   username: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     unique: true,
     allowNull: false
   },
   password: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   }
 });
