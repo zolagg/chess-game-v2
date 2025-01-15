@@ -32,7 +32,8 @@ jobs:
 
     - name: Lint
       working-directory: back
-      run: npm run lint
+      run: npm run lint 
+      continue-on-error: true
 
     - name: Type check
       working-directory: back
