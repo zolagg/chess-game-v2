@@ -46,3 +46,7 @@ jobs:
     - name: Build
       working-directory: back
       run: npm run build
+
+    - name: Build Docker image
+      working-directory: back
+      run: docker build -t backend:${{ github.sha }} .
