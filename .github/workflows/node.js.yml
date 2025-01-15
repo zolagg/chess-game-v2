@@ -28,7 +28,9 @@ jobs:
     
     - name: Install dependencies
       working-directory: back
-      run: npm ci
+      run: |
+        npm ci
+        npm install -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
 
     - name: Lint
       working-directory: back
