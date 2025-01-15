@@ -28,7 +28,7 @@ jobs:
         cache: 'npm'
         cache-dependency-path: "back/package-lock.json"
     - name: Install and build
-      working-directory; ./back
+      working-directory: ./back
       run: |
         npm ci
         npm run generate
