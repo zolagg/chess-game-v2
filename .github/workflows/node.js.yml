@@ -11,13 +11,11 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v4
@@ -28,8 +26,8 @@ jobs:
         cache: 'npm'
         cache-dependency-path: "back/package-lock.json"
     - name: Install and build
-      working-directory: ./back
+      working-directory: back
       run: |
         npm ci
         npm run generate
-        npm build --if-present
+        npm run build
