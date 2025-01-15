@@ -67,4 +67,9 @@ jobs:
       with:
         context: ./back
         push: true
-        tags: ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+        tags: |
+          ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+          ghcr.io/${{ github.repository }}/backend:latest
+        labels: |
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.description=Backend API for ${{ github.repository }}
