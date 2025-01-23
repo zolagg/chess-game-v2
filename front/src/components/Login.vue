@@ -65,7 +65,7 @@ const handleLogin = async () => {
             v-model="username" 
             type="text" 
             required 
-            placeholder="Enter your username" 
+            placeholder="Enter your usernam" 
           />
         </div>
       </div>
