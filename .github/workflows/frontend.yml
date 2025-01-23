@@ -3,6 +3,7 @@ name: Frontend CI
 on:
   push:
     branches: [ "*" ]
+    tags: [ "*" ]
   pull_request:
     branches: [ "*" ]
 
@@ -43,3 +44,13 @@ jobs:
       with:
         name: frontend-dist
         path: front/dist
+
+  deploy-render:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+
+    steps:
+    - name: Deploy to Render
+      run: |
+        curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
